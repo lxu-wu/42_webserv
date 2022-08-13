@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/11 18:10:38 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/13 17:44:43 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,14 @@ using std::cout;
 using std::endl;
 using std::cerr;
 
+class Location;
+class Server;
+class Conf;
+
 /* PARSE_CONF */
 void parsing(int argc, char **argv);
+void parse_basic(int argc, char **argv);
+void parse_conf(char **argv);
 
 
 class Location
@@ -62,9 +68,12 @@ class Conf
 	public:
 		Conf();
 		~Conf();
+
+		std::vector<std::string>& get_file();
 	
 	private:
 		std::vector<Server*> _servers;
+		std::vector<std::string> _file;
 		
 };
 

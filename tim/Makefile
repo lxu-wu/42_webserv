@@ -1,5 +1,5 @@
-NAME =	mushu_server
-SRCS =	main.cpp parse_conf.cpp
+NAME =	Server
+SRCS =	main.cpp parse_conf.cpp Classes.cpp
 
 OBJ = $(SRCS:.cpp=.o)
 

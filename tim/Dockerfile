@@ -1,6 +1,8 @@
 FROM nginx
 
-#COPY	/test.conf /etc/nginx/http.d/default.conf
+COPY	/nginx.conf /etc/nginx/http.d/default.conf
 
-EXPOSE 443
 
+
+#docker docker build -t mynginx .      
+#docker docker run --name mynginx -d -p 80:80 mynginx 
