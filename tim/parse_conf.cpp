@@ -12,14 +12,12 @@
 
 # include "webserv.hpp"
 
-void parsing(int argc, char **argv)
+void parsing(int argc, char **argv, Conf &data)
 {
-	Conf data;
-	
 	parse_basic(argc, argv);
-	read_file(argv, &data);
-	
-}
+	data.read_file(argv[1]);
+	data.check_brackets();
+} 
 
 /* Check if file is good to use */
 void parse_basic(int argc, char **argv)
@@ -44,28 +42,29 @@ void parse_basic(int argc, char **argv)
 			exit (1);
 		}
 	}
-	
 }
 
-/* Fill data will all read lines */
-void read_file(char **argv, Conf *data)
+/* Count words in a sentence */ 
+int count_words(std::string sentence)
 {
-	std::ifstream file(argv[1]);
-	std::string output;
+	int ret = 0, i = 0;
 
-	while (std::getline(file, output))
+	while (sentence[i + 1])
 	{
-		data->get_file.insert();
+		if (!isspace(sentence[i]) && isspace(sentence[i + 1]))
+			ret++;
 	}
+	return (ret);
 }
 
-// void parse_conf(char **argv)
-// {
-// 	std::ifstream file(argv[1]);
-// 	std::string output;
-	
-// 	while ( std::getline(file, output) )
-// 	{
-//       	cout << output << endl;
-// 	}
-// }
+/* Retun first word from line */
+std::string ft_first_word(std::string line)
+{
+	int i = 0, j = 0;
+	while (isspace(line[i]))
+		i++;
+	j = i;
+	while (!isspace(line[j]))
+		j++;
+	return (line.substr(i, j));
+}

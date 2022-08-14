@@ -14,6 +14,18 @@
 
 int main(int argc, char **argv)
 {
-	parsing(argc, argv);
+	Conf data;
+
+	parsing(argc, argv, data);
+
+	// std::vector<std::string> test = data.get_file();
+	// std::vector<std::string>::iterator it = test.begin();
+	// std::vector<std::string>::iterator it_end = test.end();
+	// while (it != it_end)
+	// {
+	// 	cout << "it = " << *it << endl;
+	// 	it++;
+	// }
+	
 	return 0;	
 }
