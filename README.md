@@ -1,5 +1,5 @@
 # 42_webserv
 
-On va bientot le demarrer vous inquetez pas les amigos :)
+T en est ou ds inception la? :)
 
 mushumartial
