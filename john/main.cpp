@@ -16,5 +16,5 @@ int main(int ac, char **av)
     Server serv;
 
     serv.setup(PORT);
-    serv.getInfo();
+    serv.start();
 }

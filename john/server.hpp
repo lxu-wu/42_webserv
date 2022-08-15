@@ -20,17 +20,6 @@ class Server
                 return -1;
             if (listen(serverSocket, 1000) != 0)
                 perror("listen");
-
-            sockaddr_in addrclient;
-            socklen_t clientSize = sizeof(addrclient);
-            clientSocket = accept(serverSocket, (sockaddr *)&addrclient, &clientSize);
-            if(clientSocket)
-                std::cout << "Connected !" << std::endl;
-            else
-            {
-                perror("connect");
-                return -1;
-            }
             return 0;
         }
 
@@ -46,6 +35,26 @@ class Server
             // std::string hello = "Hello from the server";//IMPORTANT! WE WILL GET TO IT
             write(clientSocket , "hello" , 5);
             return 0;
+        }
+
+        void start() // Start the queue loop
+        {
+            sockaddr_in addrclient;
+            socklen_t clientSize = sizeof(addrclient);
+
+            while(1)
+            {
+                clientSocket = accept(serverSocket, (sockaddr *)&addrclient, &clientSize);
+                if(clientSocket)
+                    std::cout << "Connected !" << std::endl;
+                else
+                {
+                    perror("connect");
+                    exit(-1);
+                }
+                this->getInfo();
+            }
+
         }
 
     private :
