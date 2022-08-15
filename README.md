@@ -1,5 +1,6 @@
 # 42_webserv
 
-T en est ou ds inception la? :)
+Chere Lxu-Wu
+Si on termine pas ds une semaine, cela veut dire que tu as menti :)
 
 mushumartial
