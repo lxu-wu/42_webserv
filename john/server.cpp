@@ -33,7 +33,7 @@ void Server::start()
 
     while(1)
     {
-        clientSocket = accept(serverSocket, (sockaddr *)&addrclient, &clientSize);
+        clientSocket = accept(serverSocket, (sockaddr *)&addrclient, &clientSize); // wait until client connect
         if(clientSocket)
             std::cout << "Connected !" << std::endl;
         else
@@ -58,5 +58,5 @@ void Server::getClientInfo()
         exit(-1);
     }
     std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-    write(clientSocket , &hello , hello.size() );
+    send(clientSocket , hello.c_str(), hello.size(), 0);
 }
