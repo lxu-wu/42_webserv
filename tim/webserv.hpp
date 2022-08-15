@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/13 17:44:43 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/15 16:00:20 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,16 +19,43 @@
 # include <set>
 # include <cctype>
 # include <string>
+
+/* john */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <istream>
+
 using std::cout;
 using std::endl;
 using std::cerr;
 
 class Location;
-class Server;
+class Servers;
 class Conf;
 
 /* CHANGE ALL SENTENCE BY LINE */
 /* !!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
+/* REQUEST
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Opera";v="89", "Chromium";v="103", "_Not:A-Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "macOS"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.134 Safari/537.36 OPR/89.0.4447.83
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.9
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9
+*/
 
 
 /* PARSE_CONF */
@@ -53,11 +80,11 @@ class Location
 		
 };
 
-class Server
+class Servers
 {
 	public:
-		Server();
-		~Server();
+		Servers();
+		~Servers();
 
 	private:
 		std::string _listen;
@@ -87,7 +114,7 @@ class Conf
 		void check_directive();
 	
 	private:
-		std::vector<Server*> _servers;
+		std::vector<Servers*> _servers;
 		std::vector<std::string> _file;
 		std::vector<std::string> _directives;
 		

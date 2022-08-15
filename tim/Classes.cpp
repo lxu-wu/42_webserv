@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/13 14:48:09 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/13 17:44:40 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/15 15:35:23 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,12 @@
 /*                                                      */
 /* ---------------------------------------------------- */
 
-Server::Server()
+Servers::Servers()
 {
 	
 }
 
-Server::~Server()
+Servers::~Servers()
 {
 	
 }
@@ -62,9 +62,10 @@ std::vector<std::string> Conf::get_file() const
 /* --- FUNCTIONS --- */
 void Conf::check_conf()
 {
-
+	
 }
 
+/* Check if all lines are directive */
 void Conf::check_directive()
 {
 	std::size_t len = _file.size();
@@ -80,7 +81,7 @@ void Conf::check_directive()
 	
 }
 
-/* Check if first word is a directive */
+/* Check if word is a directive */
 bool Conf::is_directive(std::string sentence)
 {
 	std::size_t count = count_words(sentence), len = _directives.size();
@@ -88,7 +89,7 @@ bool Conf::is_directive(std::string sentence)
 
 	for (size_t i = 0; i < len; i++)
 	{
-		if (word.find(_directives[i]) != std::string::npos)
+		if (word == _directives[i])
 		{
 			if (count == 1 && word != "}" && word != "{" && word != "server")
 				return false;
