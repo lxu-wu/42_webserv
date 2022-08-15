@@ -16,14 +16,5 @@ int main(int ac, char **av)
     Server serv;
 
     serv.setup(PORT);
-    // char buffer[1024] = {0};
-    // int valread = read( client , buffer, 1024); 
-    // std::cout << buffer << std::endl;
-    // if(valread < 0)
-    // { 
-    //     printf("No bytes are there to read");
-    // }
-    // // std::string hello = "Hello from the server";//IMPORTANT! WE WILL GET TO IT
-    // write(client , "hello" , 5);
-    // close(client);
+    serv.getInfo();
 }

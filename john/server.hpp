@@ -34,6 +34,20 @@ class Server
             return 0;
         }
 
+        int getInfo() // TEST
+        {
+            char buffer[1024] = {0};
+            int valread = read( clientSocket , buffer, 1024); 
+            std::cout << buffer << std::endl;
+            if(valread < 0)
+            { 
+                printf("No bytes are there to read");
+            }
+            // std::string hello = "Hello from the server";//IMPORTANT! WE WILL GET TO IT
+            write(clientSocket , "hello" , 5);
+            return 0;
+        }
+
     private :
         int clientSocket;
         int serverSocket;
