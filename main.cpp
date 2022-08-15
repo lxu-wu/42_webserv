@@ -1,36 +1,47 @@
-#include <sys/types.h> /* Voir NOTES */
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <istream>
-#include <iostream>
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/08/11 14:39:34 by tmartial          #+#    #+#             */
+/*   Updated: 2022/08/15 15:59:04 by tmartial         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-// * CONFIG
+#include "webserv.hpp"
+#include "john.hpp"
 #define PORT 8080
 
-int main(int ac, char **av)
+/* PARSING:
+- ARGC == 2
+- .conf file
+- Good number bracket
+- Directives exist
+- TO DO: Directives in between sever brackets.
+- TO DO: Stock directives in data name.empty()
+*/
+
+int main(int argc, char **argv)
 {
-    (void)ac;
-    (void)av;
-    int server_fd;
-    struct sockaddr_in address;
+	Conf data;
 
-    if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        return -1;
+	parsing(argc, argv, data);
+	
+	// Server serv;
 
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = htonl(INADDR_ANY);
-    address.sin_port = htons(PORT);
-
-    if((server_fd = bind(server_fd, (struct sockaddr *)&address, sizeof(address))) < 0)
-        return -1;
-s
-    if (listen(server_fd, 3) != 0)
-        perror("listen");
-    // int new_socket;
-    // int addlen;
-    // if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addlen))<0)
-    //     return -1;
-
-    // send(new_socket, "Hello, world!\n", 13, 0);
-    // while(1);
+    // serv.setup(PORT);
+    // serv.start();
+	
+	// std::vector<std::string> test = data.get_file();
+	// std::vector<std::string>::iterator it = test.begin();
+	// std::vector<std::string>::iterator it_end = test.end();
+	// while (it != it_end)
+	// {
+	// 	cout << "it = " << *it << endl;
+	// 	it++;
+	// }
+	
+	return 0;	
 }
