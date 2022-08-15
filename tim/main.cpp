@@ -12,6 +12,16 @@
 
 #include "webserv.hpp"
 
+/* PARSING:
+- ARGC == 2
+- .conf file
+- Good number bracket
+- Directives exist
+- TO DO: Directives in between sever brackets.
+- TO DO: Stock directives in data name.empty()
+
+*/
+
 int main(int argc, char **argv)
 {
 	Conf data;

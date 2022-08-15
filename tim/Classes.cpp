@@ -65,19 +65,34 @@ void Conf::check_conf()
 
 }
 
+void Conf::check_directive()
+{
+	std::size_t len = _file.size();
+
+	for (size_t i = 0; i < len; i++)
+	{
+		if (!this->is_directive(_file[i]))
+		{
+			cerr << "Error: Conf file is not in good format" << endl;
+			exit (1);
+		}
+	}
+	
+}
+
 /* Check if first word is a directive */
 bool Conf::is_directive(std::string sentence)
 {
 	std::size_t count = count_words(sentence), len = _directives.size();
 	std::string word = ft_first_word(sentence);
 
-	for (size_t i = 0; i <= len; i++)
+	for (size_t i = 0; i < len; i++)
 	{
 		if (word.find(_directives[i]) != std::string::npos)
 		{
 			if (count == 1 && word != "}" && word != "{" && word != "server")
 				return false;
-			else if (count >= 3 && word != "allowed_methods" && word != "location")
+			else if (count >= 3 && word != "allowed_methods" && word != "location" && word != "error_page")
 				return false;
 			return true;
 		}

@@ -84,6 +84,7 @@ class Conf
 		void check_conf();
 		void check_brackets();
 		bool is_directive(std::string sentence);
+		void check_directive();
 	
 	private:
 		std::vector<Server*> _servers;

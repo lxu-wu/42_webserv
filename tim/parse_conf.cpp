@@ -14,9 +14,10 @@
 
 void parsing(int argc, char **argv, Conf &data)
 {
-	parse_basic(argc, argv);
+	parse_basic(argc, argv); //ARGC && .conf
 	data.read_file(argv[1]);
-	data.check_brackets();
+	data.check_brackets(); //Num Brackets
+	data.check_directive();//All lines are directives && good num of element
 } 
 
 /* Check if file is good to use */
@@ -53,7 +54,10 @@ int count_words(std::string sentence)
 	{
 		if (!isspace(sentence[i]) && isspace(sentence[i + 1]))
 			ret++;
+		i++;
 	}
+	if (!isspace(sentence[i]))
+		ret++;
 	return (ret);
 }
 
@@ -61,10 +65,10 @@ int count_words(std::string sentence)
 std::string ft_first_word(std::string line)
 {
 	int i = 0, j = 0;
-	while (isspace(line[i]))
+	while (isspace(line[i]) && line[i])
 		i++;
 	j = i;
-	while (!isspace(line[j]))
+	while (!isspace(line[j]) && line[j])
 		j++;
-	return (line.substr(i, j));
+	return (line.substr(i, j - i));
 }
