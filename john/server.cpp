@@ -49,14 +49,27 @@ void Server::start()
 
 void Server::getClientInfo()
 {
-    char buffer[1024] = {0};
-    int valread = read( clientSocket , buffer, 1024); 
-    std::cout << buffer << std::endl;
+    char clientrep[1024];
+    int valread = recv( clientSocket , &clientrep, 1024, 0); 
+    std::cout << clientrep << std::endl;
     if(valread < 0)
     {
         std::cout << "First client request is empty" << std::endl;
         exit(-1);
     }
-    std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
+    showPage("index.html"); // ! to change after parsing
+}
+
+void Server::showPage(std::string dir)
+{
+    int fd = open(dir.c_str(), O_RDONLY);
+    char file[1024];
+    int len = read(fd, file, 1024);
+    // std::cout << file << std::endl;
+    
+    std::string data(file, len);
+    std::string hello = "HTTP/1.1 200 OK\n" + data;
     send(clientSocket , hello.c_str(), hello.size(), 0);
+    // clientSocket << fd;
+
 }
