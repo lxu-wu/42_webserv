@@ -11,20 +11,27 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <vector>
+#include <iostream>
 
-#include "Socket.hpp"
-
+#include "socket.hpp"
+#include "Client.hpp"
 
 class Server
 {
     public :
         void listAllSockets(); // put all sockets in the list
         void waitClient(); // wait until client is connected
-
-
+        void acceptClient(); // accept client and register them in vec
+        void handleRequest(); // handle GET POST
+        
 
     private :
         std::vector<Socket *> sockets;
+        std::vector<Client> clients;
+
+
+        fd_set read;
+        fd_set write;
 };
 
 #endif

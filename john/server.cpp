@@ -1,7 +1,11 @@
-#include "Server.hpp"
-
+#include "server.hpp"
 #define NUM_SOCKS 3
+
 int ports[NUM_SOCKS] = {8080, 8081, 8082};
+std::string allow[2] = {
+    "GET", "POST"
+};
+
 
 void Server::listAllSockets()
 {
@@ -18,14 +22,62 @@ void Server::waitClient()
 {
     fd_set readSet;
     fd_set writeSet;
+    int max_fd = 0;
 
     FD_ZERO(&readSet);
     FD_ZERO(&writeSet);
+    for(int i = 0; i < sockets.size(); i++) // Set fd of server
+    {
+        FD_SET(sockets[i]->getServerSocket(), &readSet);
+        if(sockets[i]->getServerSocket() > max_fd)
+            max_fd = sockets[i]->getServerSocket();
+    }
+    for(int i = 0; i < clients.size(); i++) // Set fd of server
+    {
+        FD_SET(clients[i].getClientSocket(), &readSet);
+        if(clients[i].getClientSocket() > max_fd)
+            max_fd = clients[i].getClientSocket();
+    }
+    if(select(max_fd + 1, &readSet, &writeSet, 0, 0) < 0)
+        exit(-1);
+    write = writeSet;
+    read = readSet;
+}
+
+
+void Server::acceptClient()
+{
+    sockaddr_in addrclient;
+    socklen_t clientSize = sizeof(addrclient);
+
     for(int i = 0; i < sockets.size(); i++)
     {
-        
+        if(FD_ISSET(sockets[i]->getServerSocket(), &read))
+        {
+            Client tmp;
+            tmp.setSocketClient(accept(sockets[i]->getServerSocket(), (sockaddr *)&addrclient, &clientSize));
+            clients.push_back(tmp);
+            if(sockets[i]->getServerSocket())
+                std::cout << "Connected on " << sockets[i]->getServerSocket() << std::endl;
+            else
+            {
+                perror("Connect");
+                exit(-1);
+            }
+        }
     }
+}
 
+void Server::handleRequest()
+{
+    for(int i = 0; i < clients.size(); i++)
+    {
+        // char clientrep[1024];
+        // bzero(clientrep, 1024);
+        // int valread = recv( clients[i].getClientSocket() , &clientrep, 1024, 0);
+        // std::cout << clientrep << std::endl;
+
+    }
 }
 
 

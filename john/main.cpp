@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <ctime>
 
-#include "Server.hpp"
+#include "server.hpp"
 // #include "Socket.hpp"
 #include "webserv.hpp"
 
@@ -23,9 +23,14 @@ int main(int ac, char **av)
     //     return 0;
     // }
     Server serv;
-
     serv.listAllSockets();
 
+    while(1)
+    {
+        serv.waitClient();
+        serv.acceptClient();
+        serv.handleRequest();
+    }
 
 
 	// // parsing(ac, av, data);
@@ -35,10 +40,6 @@ int main(int ac, char **av)
     // for(int i = 0; i < NSERV; i++)
     //     servers[i].setup(ports[i]);
 
-    // while(1)
-    // {
-
-    // }
 
 
 }
