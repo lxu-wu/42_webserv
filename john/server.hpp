@@ -1,8 +1,7 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-
-#include <sys/types.h> /* Voir NOTES */
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <istream>
@@ -11,21 +10,21 @@
 #include <string>  
 #include <fcntl.h>
 #include <stdio.h>
-#include <string.h>
+#include <vector>
+
+#include "Socket.hpp"
+
 
 class Server
 {
     public :
-        void setup(size_t port); // setup the server and client socket
-        void start(); // Wait for client
-        void showPage(std::string dir); // Send a request to the server for show page requested
+        void listAllSockets(); // put all sockets in the list
+        void waitClient(); // wait until client is connected
+
+
 
     private :
-        void getClientInfo(); // Get first req of client
-        int clientSocket;
-        int serverSocket;
-
+        std::vector<Socket *> sockets;
 };
-
 
 #endif

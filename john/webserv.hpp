@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jdecorte42 <jdecorte42@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/15 16:00:20 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/15 19:06:24 by jdecorte42       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,6 @@ class Servers
 		Servers();
 		~Servers();
 
-	private:
 		std::string _listen;
 		std::string _name;
 		std::string _method;
@@ -105,6 +104,8 @@ class Conf
 		~Conf();
 
 		std::vector<std::string> get_file() const;
+		std::vector<Servers*> getServers() const { return _servers; }
+
 
 		/* Functions */
 		void read_file(std::string name);
@@ -113,7 +114,6 @@ class Conf
 		bool is_directive(std::string sentence);
 		void check_directive();
 	
-	private:
 		std::vector<Servers*> _servers;
 		std::vector<std::string> _file;
 		std::vector<std::string> _directives;

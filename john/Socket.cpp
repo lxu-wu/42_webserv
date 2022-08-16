@@ -1,34 +1,44 @@
-#include "Server.hpp"
+#include "Socket.hpp"
 
-#define NUM_SOCKS 3
-int ports[NUM_SOCKS] = {8080, 8081, 8082};
-
-void Server::listAllSockets()
-{
-    for(int i = 0; i < NUM_SOCKS; i++)
+void Socket::setup(size_t port) {
+    if((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        Socket *socket = new Socket;
-        socket->setup(ports[i]);
-        sockets.push_back(socket);
+        perror("ServerSocket");
+        exit(-1);
+    }
+
+    struct sockaddr_in address;
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = htonl(INADDR_ANY);
+    address.sin_port = htons(port);
+
+    if((bind(serverSocket, (struct sockaddr *)&address, sizeof(address))) < 0)
+    {
+        perror("bind");
+        exit(-1);
+    }
+    if (listen(serverSocket, 1000) != 0)
+    {
+        perror("Listenning");
+        exit(-1);
+    }
+    else
+    {
+        time_t now = time(0);
+        tm *ltm = localtime(&now);
+        std::cout << "[" << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "]" << "[" << port << "] listening ..." << std::endl;
     }
 }
 
-
-void Server::waitClient()
+void Socket::waitClient()
 {
     fd_set readSet;
     fd_set writeSet;
 
     FD_ZERO(&readSet);
     FD_ZERO(&writeSet);
-    for(int i = 0; i < sockets.size(); i++)
-    {
-        
-    }
 
 }
-
-
 
 // void Socket::getClientInfo()
 // {
