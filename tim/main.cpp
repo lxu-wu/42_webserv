@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jdecorte42 <jdecorte42@student.42.fr>      +#+  +:+       +#+        */
+/*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/11 14:39:34 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/16 12:32:56 by jdecorte42       ###   ########.fr       */
+/*   Updated: 2022/08/17 14:57:57 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 /* PARSING:
 - ARGC == 2
 - .conf file
-- Good number bracket
 - Directives exist
 - TO DO: Directives in between sever brackets.
 - TO DO: Stock directives in data name.empty()

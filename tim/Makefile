@@ -3,7 +3,7 @@ SRCS =	main.cpp parse_conf.cpp Classes.cpp
 
 OBJ = $(SRCS:.cpp=.o)
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
 CXX = c++
 rm = rm -rf
 

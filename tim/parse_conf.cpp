@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/11 15:14:35 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/13 17:46:41 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/17 13:43:42 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,21 @@
 
 void parsing(int argc, char **argv, Conf &data)
 {
-	parse_basic(argc, argv); //ARGC && .conf
-	data.read_file(argv[1]);
-	data.check_brackets(); //Num Brackets
+	parse_basic(argc, argv); //ARGC && .conf GOOD
+	data.read_file(argv[1]);// GOOD
+	data.init_file_pos();//GOOD
 	data.check_directive();//All lines are directives && good num of element
+	data.stock_data();
 } 
 
 /* Check if file is good to use */
 void parse_basic(int argc, char **argv)
 {
 	if (argc != 2)
-		exit(1);
+	{
+		cerr << "Error: file missing" << endl;
+		exit (1);
+	}
 
 	std::ifstream file(argv[1]);
 
@@ -71,4 +75,27 @@ std::string ft_first_word(std::string line)
 	while (!isspace(line[j]) && line[j])
 		j++;
 	return (line.substr(i, j - i));
+}
+
+/* Return last word from line */
+std::string ft_last_word(std::string line)
+{
+	int i = 0, j = 0;
+	while (isspace(line[i]) && line[i])
+		i++;
+	j = i;
+	while (!isspace(line[j]) && line[j])
+		j++;
+	return (line.substr(i, j - i));
+}
+
+/* Return last part from line starting fron first word */
+std::string ft_last_part(std::string line)
+{
+	std::string first = ft_first_word(line);
+	int pos = line.find(first), i = pos + 1;
+	
+	while (line[i])
+		i++;
+	return (line.substr(pos, i - pos));
 }
