@@ -12,9 +12,11 @@
 #include <stdio.h>
 #include <vector>
 #include <iostream>
+#include <netdb.h>
+
 
 #include "socket.hpp"
-#include "Client.hpp"
+#include "client.hpp"
 
 class Server
 {
@@ -23,15 +25,18 @@ class Server
         void waitClient(); // wait until client is connected
         void acceptClient(); // accept client and register them in vec
         void handleRequest(); // handle GET POST
-        
+        void showPage(int socket, std::string dir);
+        std::vector<Socket *> getSocketList() {return sockets; }
+        std::vector<Client> getClientsList() {return clients; }
+
 
     private :
         std::vector<Socket *> sockets;
         std::vector<Client> clients;
 
 
-        fd_set read;
-        fd_set write;
+        fd_set _read;
+        fd_set _write;
 };
 
 #endif

@@ -7,12 +7,18 @@
 #include <ctime>
 
 #include "server.hpp"
-// #include "Socket.hpp"
-#include "webserv.hpp"
 
-// * CONFIG ============
-// #define PORT 8080
-#define NSERV 3
+void deleteallfd(Server serv)
+{
+    for(int i = 0; i < serv.getSocketList().size(); i++)
+    {
+        close(serv.getSocketList()[i]->getServerSocket());
+    }
+    for(int i = 0; i < serv.getClientsList().size(); i++)
+    {
+        close(serv.getClientsList()[i].getClientSocket());
+    }
+}
 
 
 int main(int ac, char **av)
@@ -31,7 +37,7 @@ int main(int ac, char **av)
         serv.acceptClient();
         serv.handleRequest();
     }
-
+    // deleteallfd(serv);
 
 	// // parsing(ac, av, data);
 
@@ -39,7 +45,6 @@ int main(int ac, char **av)
     // std::vector<Server> servers(NSERV);
     // for(int i = 0; i < NSERV; i++)
     //     servers[i].setup(ports[i]);
-
 
 
 }

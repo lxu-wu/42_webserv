@@ -40,8 +40,8 @@ void Server::waitClient()
     }
     if(select(max_fd + 1, &readSet, &writeSet, 0, 0) < 0)
         exit(-1);
-    write = writeSet;
-    read = readSet;
+    _write = writeSet;
+    _read = readSet;
 }
 
 
@@ -52,59 +52,48 @@ void Server::acceptClient()
 
     for(int i = 0; i < sockets.size(); i++)
     {
-        if(FD_ISSET(sockets[i]->getServerSocket(), &read))
+        if(FD_ISSET(sockets[i]->getServerSocket(), &_read))
         {
             Client tmp;
             tmp.setSocketClient(accept(sockets[i]->getServerSocket(), (sockaddr *)&addrclient, &clientSize));
             clients.push_back(tmp);
-            if(sockets[i]->getServerSocket())
-                std::cout << "Connected on " << sockets[i]->getServerSocket() << std::endl;
-            else
+            if(sockets[i]->getServerSocket() < 0)
             {
                 perror("Connect");
                 exit(-1);
             }
+            std::cout << "New connection !" << std::endl;
         }
     }
 }
+
+// std::string test[3] = {"index.html", "www/html/index.html", "www/html/error/error.html"};
 
 void Server::handleRequest()
 {
     for(int i = 0; i < clients.size(); i++)
     {
-        // char clientrep[1024];
-        // bzero(clientrep, 1024);
-        // int valread = recv( clients[i].getClientSocket() , &clientrep, 1024, 0);
-        // std::cout << clientrep << std::endl;
-
+        if(FD_ISSET(clients[i].getClientSocket(), &_read))
+        {
+            std::cout << "New Request !" << std::endl;
+            int valread = recv(clients[i].getClientSocket() , &clients[i].getRequestBuffer(), 2048, 0);
+            // showPage(clients[i].getClientSocket(),"index.html");
+        }
     }
+    usleep(500);
 }
 
-
-
-// void Socket::getClientInfo()
-// {
-//     char clientrep[1024];
-//     int valread = recv( clientSocket , &clientrep, 1024, 0); 
-//     std::cout << clientrep << std::endl;
-//     if(valread < 0)
-//     {
-//         std::cout << "First client request is empty" << std::endl;
-//         exit(-1);
-//     }
-//     showPage("index.html"); // ! to change after parsing
-// }
-
-// void Socket::showPage(std::string dir)
-// {
-//     int fd = open(dir.c_str(), O_RDONLY);
-//     char file[1024];
-//     int len = read(fd, file, 1024);
-//     // std::cout << file << std::endl;
+void Server::showPage(int socket ,std::string dir)
+{
+    int fd = open(dir.c_str(), O_RDONLY);
+    if(fd < 0)
+        return;
+    char file[2048];
+    int len = read(fd, file, 2048);
+    // std::cout << file << std::endl;
     
-//     std::string data(file, len);
-//     std::string hello = "HTTP/1.1 200 OK\n" + data;
-//     send(clientSocket , hello.c_str(), hello.size(), 0);
-//     // clientSocket << fd;
+    std::string data(file, len);
+    std::string hello = "HTTP/1.1 200 OK\n" + data;
+    send(socket , hello.c_str(), hello.size(), 0);
 
-// }
+}
