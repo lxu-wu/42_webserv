@@ -15,8 +15,24 @@ void Server::listAllSockets()
         socket->setup(ports[i]);
         sockets.push_back(socket);
     }
+    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
+    errors.insert(std::pair<int, std::string>(403, "Forbidden"));
+    errors.insert(std::pair<int, std::string>(404, "Not Found"));
+    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
+    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
+    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
+    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
 }
 
+
+void Server::showError(int err)
+{
+    std::map<int , std::string>::iterator it = errors.find(err);
+    if(it != errors.end())
+    {
+        std::cout << "Show error : " << err << " !" << std::endl;
+    }
+}
 
 void Server::waitClient()
 {
@@ -67,7 +83,23 @@ void Server::acceptClient()
     }
 }
 
-// std::string test[3] = {"index.html", "www/html/index.html", "www/html/error/error.html"};
+
+bool Server::kill_client(Client client)
+{
+    close(client.getClientSocket());
+
+    for(int i = 0; i < clients.size(); i++)
+    {
+        if(clients[i].getClientSocket() == client.getClientSocket())
+        {
+            clients.erase(clients.begin() + i);
+            return true;
+        }
+    }
+    exit(1);
+}
+
+
 
 void Server::handleRequest()
 {
@@ -76,7 +108,39 @@ void Server::handleRequest()
         if(FD_ISSET(clients[i].getClientSocket(), &_read))
         {
             std::cout << "New Request !" << std::endl;
-            int valread = recv(clients[i].getClientSocket() , &clients[i].getRequestBuffer(), 2048, 0);
+            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, 2048 - clients[i].requestSize, 0);
+            clients[i].requestSize += Reqsize;
+            std::cout << clients[i].request << std::endl;
+            if(clients[i].requestSize > 2048)
+            {
+                std::cout << "out of range" << std::endl;
+                showError(403);
+                if(kill_client(clients[i]))
+                    i--;
+                continue;
+            }
+            if(Reqsize == 0)
+            {
+                std::cout << "Connection is closed !" << std::endl;
+                kill_client(clients[i]);
+                i--;
+            }
+            else if (Reqsize < 0)
+            {
+                // std::cout << "Connection is closed !" << std::endl;
+                showError(403);
+                kill_client(clients[i]);
+                i--;
+            }
+            else
+            {
+                showPage(clients[i].getClientSocket(), "index.html");
+
+                if(kill_client(clients[i]))
+                    i--;
+                clients[i].requestSize = 0;
+                bzero(clients[i].request, 2048);
+            }
             // showPage(clients[i].getClientSocket(),"index.html");
         }
     }

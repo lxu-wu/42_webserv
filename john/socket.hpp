@@ -15,7 +15,7 @@
 #include <iostream>
 
 #include "socket.hpp"
-#include "client.hpp"
+#include "Client.hpp"
 
 class Socket
 {

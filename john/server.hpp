@@ -13,10 +13,11 @@
 #include <vector>
 #include <iostream>
 #include <netdb.h>
+#include <map>
 
 
 #include "socket.hpp"
-#include "client.hpp"
+#include "Client.hpp"
 
 class Server
 {
@@ -26,6 +27,9 @@ class Server
         void acceptClient(); // accept client and register them in vec
         void handleRequest(); // handle GET POST
         void showPage(int socket, std::string dir);
+        void showError(int err);
+        bool kill_client(Client client);
+
         std::vector<Socket *> getSocketList() {return sockets; }
         std::vector<Client> getClientsList() {return clients; }
 
@@ -33,6 +37,8 @@ class Server
     private :
         std::vector<Socket *> sockets;
         std::vector<Client> clients;
+        std::map<int , std::string> errors;
+
 
 
         fd_set _read;
