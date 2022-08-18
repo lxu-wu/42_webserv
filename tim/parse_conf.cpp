@@ -14,38 +14,30 @@
 
 void parsing(int argc, char **argv, Conf &data)
 {
-	parse_basic(argc, argv); //ARGC && .conf GOOD
-	data.read_file(argv[1]);// GOOD
-	data.init_file_pos();//GOOD
-	data.check_directive();//All lines are directives && good num of element
+	parse_basic(argc, argv);
+	data.read_file(argv[1]);
+	data.init_file_pos();
+	data.check_directive();
 	data.stock_data();
+	data.check_data();
 } 
 
 /* Check if file is good to use */
 void parse_basic(int argc, char **argv)
 {
 	if (argc != 2)
-	{
-		cerr << "Error: file missing" << endl;
-		exit (1);
-	}
+		throw ArgvErr();
 
 	std::ifstream file(argv[1]);
 
 	if (!file)
-	{
-		cerr << "Error: file could not be opened" << endl;
-		exit (1);
-	}
+		throw ArgvErr();
 	else
 	{
 		std::string name = std::string(argv[1]);
 		
 		if (name.find(".conf") == std::string::npos) //npos == -1 in size_t
-		{
-			cerr << "Error: file is not .conf" << endl;
-			exit (1);
-		}
+			throw ArgvErr();
 	}
 }
 
@@ -63,6 +55,18 @@ int count_words(std::string sentence)
 	if (!isspace(sentence[i]))
 		ret++;
 	return (ret);
+}
+
+/* Check is str is int */
+bool my_atoi(std::string word)
+{
+	int i = 0;
+	while (word[i])
+	{
+		if (!isdigit(word[i]))
+			return false;
+	}
+	return true;
 }
 
 /* Retun first word from line */

@@ -24,8 +24,16 @@ int main(int argc, char **argv)
 {
 	Conf data;
 
-	parsing(argc, argv, data);
-	data.print_all_data();
+	try
+	{
+		parsing(argc, argv, data);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << endl;
+		return (1);
+	}
+	//data.print_all_data();
 	
 	
 	/* 

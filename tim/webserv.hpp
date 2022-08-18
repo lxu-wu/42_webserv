@@ -21,6 +21,7 @@
 # include <cctype>
 # include <string>
 # include <sstream>
+# include <cstdlib>
 
 /* john */
 #include <unistd.h>
@@ -64,6 +65,7 @@ int count_words(std::string line);
 std::string ft_first_word(std::string line);
 std::string ft_last_word(std::string line);
 std::string ft_last_part(std::string line);
+bool my_atoi(std::string word);
 
 
 class Location
@@ -78,7 +80,7 @@ class Location
 		void setIndex(std::string word)		{_index = word;};
 		void setMethod(std::string word)	{_method.insert(word);};
 
-		/* Getters TO FINISH */
+		/* Getters */
 		std::string				getDir()	{return _dir;};
 		std::set<std::string>	getMethod()	{return _method;};
 		std::string				getRoot()	{return _root;};
@@ -147,12 +149,13 @@ class Conf
 
 		/* Functions */
 		void read_file(std::string name);
-		bool is_directive(std::string line, int pos);
+		void is_directive(std::string line, int pos);
 		void check_directive();
-		void stock_server(std::string line, Servers * server);
+		void stock_server(std::string line, Servers *server);
 		void init_file_pos();
 		void stock_data();
 		void print_all_data();
+		void check_data();
 	
 	private:
 		std::vector<Servers*>		_servers;
@@ -163,5 +166,17 @@ class Conf
 };
 
 
+/* Errors */
+/* Dont FORGET CHECK MAX INT */
+#define EXCEPTION public std::exception
+#define WHAT const char * what () const
+
+class ArgvErr : EXCEPTION {WHAT throw () { return ("Error: Arguments incorrect"); }};
+class MissingArgv : EXCEPTION {WHAT throw () { return ("Error: Missing argument after a directive"); }};
+class TooMuchArgv : EXCEPTION {WHAT throw () { return ("Error: Too much arguments after a directive"); }};
+class DirWrongPlace : EXCEPTION {WHAT throw () { return ("Error: Directive is in wrong place"); }};
+class DirWrong : EXCEPTION {WHAT throw () { return ("Error: Directive doesn't exist"); }};
+class DirMissing : EXCEPTION {WHAT throw () { return ("Error: Missing a directive"); }};
+class NotINT : EXCEPTION {WHAT throw () { return ("Error: Argument needs to be a number"); }};
 
 #endif

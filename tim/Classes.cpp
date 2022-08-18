@@ -79,7 +79,27 @@ Conf::~Conf()
 
 
 /* --- FUNCTIONS --- */
+/* Check methods are correct*/
+/* Check all data is correct */
+void Conf::check_data()
+{
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		if (_servers[i]->getName().empty() || _servers[i]->getListen().empty()
+			|| _servers[i]->getRoot().empty() || _servers[i]->getIndex().empty()
+			|| _servers[i]->getIndex().empty() || _servers[i]->getMethod().empty()
+			|| _servers[i]->getError().empty() || _servers[i]->getBody().empty())
+			throw DirMissing();
+		else if (!my_atoi(_servers[i]->getListen()) || !my_atoi(_servers[i]->getBody()))
+			throw NotINT();
 
+		
+		
+	}
+	
+}
+
+/* Print all data in conf */
 void Conf::print_all_data()
 {
 	for (size_t i = 0; i < _servers.size(); i++)
@@ -91,7 +111,6 @@ void Conf::print_all_data()
 		cout << "index = " << _servers[i]->getIndex() << endl;
 		cout << "body = " << _servers[i]->getBody() << endl;
 		cout << "methods = ";
-		//for (std::set<std::string>::iterator j = _servers[i]->getMethod().begin(); j != _servers[i]->getMethod().end(); j++)
 		std::set<std::string>::iterator j = _servers[i]->getMethod().begin();
 		for (size_t len = 0; len < _servers[i]->getMethod().size(); len++)
 		{
@@ -106,8 +125,23 @@ void Conf::print_all_data()
 		 	cout << "error " << k->first << " = " << k->second << endl;
 			k++;
 		}
+
+		for (size_t x = 0; x < _servers[i]->getLocation().size(); x++)
+		{
+			cout << "- location "<< x << ":" << endl;
+			cout << "dir = " << _servers[i]->getLocation()[x]->getDir() << endl;
+			cout << "root = " << _servers[i]->getLocation()[x]->getRoot() << endl;
+			cout << "index = " << _servers[i]->getLocation()[x]->getIndex() << endl;
+			cout << "methods = ";
+			std::set<std::string>::iterator z = _servers[i]->getLocation()[x]->getMethod().begin();
+			for (size_t len_l = 0; len_l < _servers[i]->getLocation()[x]->getMethod().size(); len_l++)
+			{
+				cout << *z << " ";
+				z++;
+			}
+			cout << endl;
+		}
 	}
-	
 }
 
 /* Vector with pos of directive if location or server */
@@ -134,14 +168,7 @@ void Conf::check_directive()
 	std::size_t len = _file.size();
 
 	for (size_t i = 0; i < len; i++)
-	{
-		if (!this->is_directive(_file[i], i))
-		{
-			cerr << "Error: Conf file is not in good format" << endl;
-			exit (1);
-		}
-	}
-	
+		this->is_directive(_file[i], i);
 }
 
 /* Stock all the datas */
@@ -215,7 +242,7 @@ void Conf::stock_server(std::string line, Servers* server)
 }
 
 /* Check if word is a directive */
-bool Conf::is_directive(std::string line, int pos)
+void Conf::is_directive(std::string line, int pos)
 {
 	std::size_t count = count_words(line), len = _directives.size();
 	std::string word = ft_first_word(line);
@@ -225,17 +252,17 @@ bool Conf::is_directive(std::string line, int pos)
 		if (word == _directives[i])
 		{
 			if (count == 1 && word != "server")
-				return false;
+				throw MissingArgv();
 			else if (count >= 3 && word != "error_page")
-				return false;
+				throw TooMuchArgv();
 			else if (count == 2 && word == "error_page")
-				return false;
+				throw MissingArgv();
 			else if (_file_pos[pos] == 1 && (word == "listen" || word == "client_max_body_size" || word == "server_name")) //0 == server, 1 == location
-				return false;
-			return true;
+				throw DirWrongPlace();
+			return ;
 		}
 	}
-	return false;
+	throw DirWrong();
 }
 
 /* Fill data will all read lines Insert in _file all lines except empty line */
