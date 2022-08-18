@@ -23,9 +23,6 @@
 # include <sstream>
 
 /* john */
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <unistd.h>
 #include <istream>
 
@@ -82,14 +79,10 @@ class Location
 		void setMethod(std::string word)	{_method.insert(word);};
 
 		/* Getters TO FINISH */
-		// std::string getListen() {return _listen;};
-		// std::string getName() {return _name;};
-		// std::set<std::string> getMethod() {return _method;};
-		// std::string getRoot() {return _root;};
-		// std::map<std::string, std::set<std::string> > getError() {return _error;};
-		// std::string getIndex() {return _index;};
-		// std::string getBody() {return _body_size;};
-		// std::vector<Location*> getLocation() {return _locations;};
+		std::string				getDir()	{return _dir;};
+		std::set<std::string>	getMethod()	{return _method;};
+		std::string				getRoot()	{return _root;};
+		std::string				getIndex()	{return _index;};
 		
 		
 	private:
@@ -106,37 +99,37 @@ class Servers
 		~Servers();
 
 		/* Setters */
-		void setListen(std::string word) {_listen = word;};
-		void setName(std::string word) {_name = word;};
-		void setMethod(std::string word) {_method.insert(word);};
-		void setRoot(std::string word) {_root = word;};
-		void setError(std::string word, std::set<std::string> lst) {_error.insert(std::pair<std::string, std::set<std::string> >(word, lst));};
-		void setIndex(std::string word) {_index = word;};
-		void setBody(std::string word) {_body_size = word;};
-		void setLocation() {_locations.push_back(new Location());};
+		void setListen(std::string word)					{_listen = word;};
+		void setName(std::string word)						{_name = word;};
+		void setMethod(std::string word)					{_method.insert(word);};
+		void setRoot(std::string word)						{_root = word;};
+		void setError(std::string error, std::string page)	{_error.insert(std::pair<std::string, std::string>(error, page));};
+		void setIndex(std::string word)						{_index = word;};
+		void setBody(std::string word)						{_body_size = word;};
+		void setLocation()									{_locations.push_back(new Location());};
 
 		/* Getters */
-		std::string getListen() {return _listen;};
-		std::string getName() {return _name;};
-		std::set<std::string> getMethod() {return _method;};
-		std::string getRoot() {return _root;};
-		std::map<std::string, std::set<std::string> > getError() {return _error;};
-		std::string getIndex() {return _index;};
-		std::string getBody() {return _body_size;};
-		std::vector<Location*> getLocation() {return _locations;};
+		std::string							getListen()		{return _listen;};
+		std::string							getName()		{return _name;};
+		std::set<std::string>				getMethod()		{return _method;};
+		std::string							getRoot()		{return _root;};
+		std::map<std::string, std::string>	getError()		{return _error;};
+		std::string							getIndex()		{return _index;};
+		std::string							getBody()		{return _body_size;};
+		std::vector<Location*>				getLocation()	{return _locations;};
 		
 		/* Functions */
 		void stock_location(std::string line, int pos);
 
 	private:
-		std::string										_listen;
-		std::string										_name;
-		std::set<std::string>							_method;
-		std::string										_root;
-		std::map<std::string, std::set<std::string> >	_error;
-		std::string										_index;
-		std::string										_body_size;
-		std::vector<Location*>							_locations;
+		std::string							_listen;
+		std::string							_name;
+		std::set<std::string>				_method;
+		std::string							_root;
+		std::map<std::string, std::string>	_error;
+		std::string							_index;
+		std::string							_body_size;
+		std::vector<Location*>				_locations;
 
 };
 

@@ -84,7 +84,28 @@ void Conf::print_all_data()
 {
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
-		/* code */
+		cout << "--- server "<< i << ":" << endl;
+		cout << "name = " << _servers[i]->getName() << endl;
+		cout << "listen = " << _servers[i]->getListen() << endl;
+		cout << "root = " << _servers[i]->getRoot() << endl;
+		cout << "index = " << _servers[i]->getIndex() << endl;
+		cout << "body = " << _servers[i]->getBody() << endl;
+		cout << "methods = ";
+		//for (std::set<std::string>::iterator j = _servers[i]->getMethod().begin(); j != _servers[i]->getMethod().end(); j++)
+		std::set<std::string>::iterator j = _servers[i]->getMethod().begin();
+		for (size_t len = 0; len < _servers[i]->getMethod().size(); len++)
+		{
+			cout << *j << " ";
+			j++;
+		}
+		cout << endl;
+		cout << "error pages:" << endl;
+		std::map<std::string, std::string>::iterator k = _servers[i]->getError().begin();
+		for (size_t len = 0; len < _servers[i]->getError().size(); len++)
+		{
+		 	cout << "error " << k->first << " = " << k->second << endl;
+			k++;
+		}
 	}
 	
 }
@@ -183,13 +204,12 @@ void Conf::stock_server(std::string line, Servers* server)
 		std::stringstream ss(line);
 		std::string token;
 		last = ft_last_word(line);
-		std::set<std::string> lst;
 
 		while (ss >> token)
 		{
-    		lst.insert(token);
+			if (token != last && token != word)
+    			server->setError(token, last);
 		}
-		server->setError(last, lst);
 	}
 	
 }
@@ -207,6 +227,8 @@ bool Conf::is_directive(std::string line, int pos)
 			if (count == 1 && word != "server")
 				return false;
 			else if (count >= 3 && word != "error_page")
+				return false;
+			else if (count == 2 && word == "error_page")
 				return false;
 			else if (_file_pos[pos] == 1 && (word == "listen" || word == "client_max_body_size" || word == "server_name")) //0 == server, 1 == location
 				return false;

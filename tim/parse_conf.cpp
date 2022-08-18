@@ -80,13 +80,13 @@ std::string ft_first_word(std::string line)
 /* Return last word from line */
 std::string ft_last_word(std::string line)
 {
-	int i = 0, j = 0;
+	int i = line.length() - 1, j = 0;
 	while (isspace(line[i]) && line[i])
-		i++;
+		i--;
 	j = i;
-	while (!isspace(line[j]) && line[j])
-		j++;
-	return (line.substr(i, j - i));
+	while (j > 0 && !isspace(line[j]))
+		j--;
+	return (line.substr(j + 1, i - j));
 }
 
 /* Return last part from line starting fron first word */

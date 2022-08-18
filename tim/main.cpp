@@ -11,8 +11,6 @@
 /* ************************************************************************** */
 
 #include "webserv.hpp"
-#include "john.hpp"
-#define PORT 8080
 
 /* PARSING:
 - ARGC == 2
@@ -27,12 +25,27 @@ int main(int argc, char **argv)
 	Conf data;
 
 	parsing(argc, argv, data);
+	data.print_all_data();
 	
-	// Server serv;
+	
+	/* 
+	location /loc1
+root ./website/bla
+index foo.html
+allowed_methods GET
+allowed_methods POST
 
-    // serv.setup(PORT);
-    // serv.start();
-	
+location /loc2
+root ./website/bla
+index foo.html
+
+server
+listen 80
+server_name yolo.be
+root ./website/ressources
+index index_bis.html
+client_max_body_size 9000000000
+	*/
 	// std::vector<std::string> test = data.get_file();
 	// std::vector<std::string>::iterator it = test.begin();
 	// std::vector<std::string>::iterator it_end = test.end();
