@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/19 15:06:56 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/19 18:09:01 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,7 @@ class Servers
 		/* Functions */
 		void stock_location(std::string line, int pos);
 		bool check_method();
+		bool check_error_page();
 
 	private:
 		std::string							_listen;

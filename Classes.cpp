@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/13 14:48:09 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/19 16:45:24 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/19 18:22:02 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,18 @@ bool Servers::check_method()
 			&& _locations[i]->getMethod()[j] != "DELETE" )
 				return false;
 		}
+	}
+	return true;
+}
+
+/* Check if error pages are good with nums and .html */
+bool Servers::check_error_page()
+{
+	std::map<std::string, std::string>::iterator it = _error.begin();
+	std::map<std::string, std::string>::iterator it_end = _error.end();
+	while (it != it_end)
+	{
+		if (!my_atoi(it->first) || (*it)
 	}
 	return true;
 }
@@ -103,22 +115,27 @@ Conf::~Conf()
 /* --- FUNCTIONS --- */
 
 /* Check all data is correct */
+/* 
+	- root is a path
+	- index is a html file
+	- error html
+	- ERROR PAGE MISSING = 404 default
+*/
 void Conf::check_data()
 {
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
 		if (_servers[i]->getName().empty() || _servers[i]->getListen().empty() || _servers[i]->getRoot().empty() 
-			|| _servers[i]->getIndex().empty() || _servers[i]->getMethod().empty()
-			|| _servers[i]->getError().empty() || _servers[i]->getBody().empty())
+			|| _servers[i]->getIndex().empty() || _servers[i]->getMethod().empty()  || _servers[i]->getBody().empty())
 			throw DirMissing();
-		else if (!my_atoi(_servers[i]->getListen()) || !my_atoi(_servers[i]->getBody()))
+		if (!my_atoi(_servers[i]->getListen()) || !my_atoi(_servers[i]->getBody()))
 			throw NotINT();
-		else if (!_servers[i]->check_method())
+		if (!_servers[i]->check_method())
 			throw MethWrong();
-		
 	}
 	
 }
+
 
 /* Print all data in conf */
 void Conf::print_all_data()
