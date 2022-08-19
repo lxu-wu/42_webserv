@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/17 15:43:33 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/19 15:06:56 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,20 +78,19 @@ class Location
 		void setDir(std::string word)		{_dir = word;};
 		void setRoot(std::string word)		{_root = word;};
 		void setIndex(std::string word)		{_index = word;};
-		void setMethod(std::string word)	{_method.insert(word);};
+		void setMethod(std::string word)	{_method.push_back(word);};
 
 		/* Getters */
-		std::string				getDir()	{return _dir;};
-		std::set<std::string>	getMethod()	{return _method;};
-		std::string				getRoot()	{return _root;};
-		std::string				getIndex()	{return _index;};
-		
+		std::string					getDir()	{return _dir;};
+		std::vector<std::string>	getMethod()	{return _method;};
+		std::string					getRoot()	{return _root;};
+		std::string					getIndex()	{return _index;};
 		
 	private:
-		std::string				_dir;
-		std::set<std::string>	_method;
-		std::string				_root;
-		std::string				_index;
+		std::string					_dir;
+		std::vector<std::string>	_method;
+		std::string					_root;
+		std::string					_index;
 };
 
 class Servers
@@ -103,7 +102,7 @@ class Servers
 		/* Setters */
 		void setListen(std::string word)					{_listen = word;};
 		void setName(std::string word)						{_name = word;};
-		void setMethod(std::string word)					{_method.insert(word);};
+		void setMethod(std::string word)					{_method.push_back(word);};
 		void setRoot(std::string word)						{_root = word;};
 		void setError(std::string error, std::string page)	{_error.insert(std::pair<std::string, std::string>(error, page));};
 		void setIndex(std::string word)						{_index = word;};
@@ -113,7 +112,7 @@ class Servers
 		/* Getters */
 		std::string							getListen()		{return _listen;};
 		std::string							getName()		{return _name;};
-		std::set<std::string>				getMethod()		{return _method;};
+		std::vector<std::string>			getMethod()		{return _method;};
 		std::string							getRoot()		{return _root;};
 		std::map<std::string, std::string>	getError()		{return _error;};
 		std::string							getIndex()		{return _index;};
@@ -122,11 +121,12 @@ class Servers
 		
 		/* Functions */
 		void stock_location(std::string line, int pos);
+		bool check_method();
 
 	private:
 		std::string							_listen;
 		std::string							_name;
-		std::set<std::string>				_method;
+		std::vector<std::string>			_method;
 		std::string							_root;
 		std::map<std::string, std::string>	_error;
 		std::string							_index;
@@ -162,7 +162,6 @@ class Conf
 		std::vector<std::string>	_file;
 		std::vector<int>			_file_pos;
 		std::vector<std::string>	_directives;
-		
 };
 
 
@@ -178,5 +177,6 @@ class DirWrongPlace : EXCEPTION {WHAT throw () { return ("Error: Directive is in
 class DirWrong : EXCEPTION {WHAT throw () { return ("Error: Directive doesn't exist"); }};
 class DirMissing : EXCEPTION {WHAT throw () { return ("Error: Missing a directive"); }};
 class NotINT : EXCEPTION {WHAT throw () { return ("Error: Argument needs to be a number"); }};
+class MethWrong : EXCEPTION {WHAT throw () { return ("Error: Method is wrong"); }};
 
 #endif

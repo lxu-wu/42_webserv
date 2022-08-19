@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/13 14:48:09 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/17 15:01:32 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/19 16:45:24 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,28 @@ Servers::~Servers()
 		delete _locations[i];
 	}
 	_locations.clear();
+}
+
+/* Functions */
+
+/* Check methods are correct in one server and it locations */
+bool Servers::check_method()
+{
+	for (size_t j = 0; j < _method.size(); j++)
+	{
+		if ( _method[j] != "POST" &&  _method[j] != "GET" &&  _method[j] != "DELETE" )
+			return false;
+	}
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		for (size_t j = 0; j < _locations[i]->getMethod().size(); j++)
+		{
+			if (_locations[i]->getMethod()[j] != "POST" && _locations[i]->getMethod()[j] != "GET"
+			&& _locations[i]->getMethod()[j] != "DELETE" )
+				return false;
+		}
+	}
+	return true;
 }
 
 /* Stock location */ 
@@ -79,21 +101,20 @@ Conf::~Conf()
 
 
 /* --- FUNCTIONS --- */
-/* Check methods are correct*/
+
 /* Check all data is correct */
 void Conf::check_data()
 {
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
-		if (_servers[i]->getName().empty() || _servers[i]->getListen().empty()
-			|| _servers[i]->getRoot().empty() || _servers[i]->getIndex().empty()
+		if (_servers[i]->getName().empty() || _servers[i]->getListen().empty() || _servers[i]->getRoot().empty() 
 			|| _servers[i]->getIndex().empty() || _servers[i]->getMethod().empty()
 			|| _servers[i]->getError().empty() || _servers[i]->getBody().empty())
 			throw DirMissing();
 		else if (!my_atoi(_servers[i]->getListen()) || !my_atoi(_servers[i]->getBody()))
 			throw NotINT();
-
-		
+		else if (!_servers[i]->check_method())
+			throw MethWrong();
 		
 	}
 	
@@ -111,19 +132,16 @@ void Conf::print_all_data()
 		cout << "index = " << _servers[i]->getIndex() << endl;
 		cout << "body = " << _servers[i]->getBody() << endl;
 		cout << "methods = ";
-		std::set<std::string>::iterator j = _servers[i]->getMethod().begin();
 		for (size_t len = 0; len < _servers[i]->getMethod().size(); len++)
-		{
-			cout << *j << " ";
-			j++;
-		}
+			cout << _servers[i]->getMethod()[len] << " ";
 		cout << endl;
 		cout << "error pages:" << endl;
-		std::map<std::string, std::string>::iterator k = _servers[i]->getError().begin();
+		std::map<std::string, std::string> copy = _servers[i]->getError();
+		std::map<std::string, std::string>::iterator it = copy.begin();
 		for (size_t len = 0; len < _servers[i]->getError().size(); len++)
 		{
-		 	cout << "error " << k->first << " = " << k->second << endl;
-			k++;
+		 	cout << "error " << it->first << " = " << it->second << endl;
+			it++;
 		}
 
 		for (size_t x = 0; x < _servers[i]->getLocation().size(); x++)
@@ -133,12 +151,8 @@ void Conf::print_all_data()
 			cout << "root = " << _servers[i]->getLocation()[x]->getRoot() << endl;
 			cout << "index = " << _servers[i]->getLocation()[x]->getIndex() << endl;
 			cout << "methods = ";
-			std::set<std::string>::iterator z = _servers[i]->getLocation()[x]->getMethod().begin();
-			for (size_t len_l = 0; len_l < _servers[i]->getLocation()[x]->getMethod().size(); len_l++)
-			{
-				cout << *z << " ";
-				z++;
-			}
+			for (size_t len = 0; len < _servers[i]->getLocation()[x]->getMethod().size(); len++)
+				cout << _servers[i]->getLocation()[x]->getMethod()[len] << " ";
 			cout << endl;
 		}
 	}
@@ -303,3 +317,4 @@ Location::~Location()
 	
 }
 
+/* Functions */

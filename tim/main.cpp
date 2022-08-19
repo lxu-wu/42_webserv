@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/11 14:39:34 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/17 14:57:57 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/19 14:58:42 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 		std::cerr << e.what() << endl;
 		return (1);
 	}
-	//data.print_all_data();
+	data.print_all_data();
 	
 	
 	/* 
