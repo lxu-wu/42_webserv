@@ -61,7 +61,9 @@ bool Servers::check_error_page()
 	std::map<std::string, std::string>::iterator it_end = _error.end();
 	while (it != it_end)
 	{
-		if (!my_atoi(it->first) || (*it)
+		if (!my_atoi(it->first) || (it->second).find(".html") == std::string::npos)
+			return false;
+		it++;
 	}
 	return true;
 }
@@ -75,9 +77,17 @@ void Servers::stock_location(std::string line, int pos)
 	if (word == "location")
 		_locations[pos]->setDir(last);
 	else if (word == "root")
+	{
+		if (!_locations[pos]->getRoot().empty())
+			throw DirTwice();
 		_locations[pos]->setRoot(last);
+	}
 	else if (word == "index")
+	{
+		if (!_locations[pos]->getIndex().empty())
+			throw DirTwice();
 		_locations[pos]->setIndex(last);
+	}
 	else if (word == "allowed_methods")
 		_locations[pos]->setMethod(last);
 	
@@ -118,7 +128,6 @@ Conf::~Conf()
 /* 
 	- root is a path
 	- index is a html file
-	- error html
 	- ERROR PAGE MISSING = 404 default
 */
 void Conf::check_data()
@@ -130,6 +139,8 @@ void Conf::check_data()
 			throw DirMissing();
 		if (!my_atoi(_servers[i]->getListen()) || !my_atoi(_servers[i]->getBody()))
 			throw NotINT();
+		if (!_servers[i]->check_error_page())
+			throw ErrorPage();
 		if (!_servers[i]->check_method())
 			throw MethWrong();
 	}
@@ -185,6 +196,8 @@ void Conf::init_file_pos()
 	for (size_t i = 0; i < len; i++)
 	{
 		word = ft_first_word(_file[i]);
+		if (i == 0 && word != "server")
+			throw DirMissing();
 		if (word == "server")
 			pos = 0;
 		else if (word == "location")
@@ -245,15 +258,35 @@ void Conf::stock_server(std::string line, Servers* server)
 	{
 		last = ft_last_word(line);
 		if (word == "listen")
+		{
+			if (!server->getListen().empty())
+				throw DirTwice();
 			server->setListen(last);
+		}
 		else if (word == "server_name")
+		{
+			if (!server->getName().empty())
+				throw DirTwice();
 			server->setName(last);
+		}
 		else if (word == "root")
+		{
+			if (!server->getRoot().empty())
+				throw DirTwice();
 			server->setRoot(last);
+		}
 		else if (word == "index")
+		{
+			if (!server->getIndex().empty())
+				throw DirTwice();
 			server->setIndex(last);
+		}
 		else if (word == "client_max_body_size")
+		{
+			if (!server->getBody().empty())
+				throw DirTwice();
 			server->setBody(last);
+		}
 		else if (word == "allowed_methods")
 			server->setMethod(last);
 	}

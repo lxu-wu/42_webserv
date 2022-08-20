@@ -35,9 +35,6 @@ class Location;
 class Servers;
 class Conf;
 
-/* CHANGE ALL line BY LINE */
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!! */
-
 /* REQUEST
 GET / HTTP/1.1
 Host: localhost:8080
@@ -179,5 +176,7 @@ class DirWrong : EXCEPTION {WHAT throw () { return ("Error: Directive doesn't ex
 class DirMissing : EXCEPTION {WHAT throw () { return ("Error: Missing a directive"); }};
 class NotINT : EXCEPTION {WHAT throw () { return ("Error: Argument needs to be a number"); }};
 class MethWrong : EXCEPTION {WHAT throw () { return ("Error: Method is wrong"); }};
+class ErrorPage : EXCEPTION {WHAT throw () { return ("Error: Error page is wrong"); }};
+class DirTwice : EXCEPTION {WHAT throw () { return ("Error: Two times the same directive"); }};
 
 #endif
