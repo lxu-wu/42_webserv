@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/11 15:14:35 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/19 16:46:03 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/19 17:54:56 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,6 +65,7 @@ bool my_atoi(std::string word)
 	{
 		if (!isdigit(word[i]))
 			return false;
+		i++;
 	}
 	return true;
 }

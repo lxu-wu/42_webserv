@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/19 15:06:56 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/19 18:09:01 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,6 @@ using std::cerr;
 class Location;
 class Servers;
 class Conf;
-
-/* CHANGE ALL line BY LINE */
-/* !!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 /* REQUEST
 GET / HTTP/1.1
@@ -122,6 +119,7 @@ class Servers
 		/* Functions */
 		void stock_location(std::string line, int pos);
 		bool check_method();
+		bool check_error_page();
 
 	private:
 		std::string							_listen;
@@ -178,5 +176,7 @@ class DirWrong : EXCEPTION {WHAT throw () { return ("Error: Directive doesn't ex
 class DirMissing : EXCEPTION {WHAT throw () { return ("Error: Missing a directive"); }};
 class NotINT : EXCEPTION {WHAT throw () { return ("Error: Argument needs to be a number"); }};
 class MethWrong : EXCEPTION {WHAT throw () { return ("Error: Method is wrong"); }};
+class ErrorPage : EXCEPTION {WHAT throw () { return ("Error: Error page is wrong"); }};
+class DirTwice : EXCEPTION {WHAT throw () { return ("Error: Two times the same directive"); }};
 
 #endif
