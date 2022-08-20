@@ -1,4 +1,5 @@
 #include "server.hpp"
+
 #define NUM_SOCKS 3
 
 int ports[NUM_SOCKS] = {8080, 8081, 8082};
@@ -107,10 +108,24 @@ void Server::handleRequest()
     {
         if(FD_ISSET(clients[i].getClientSocket(), &_read))
         {
-            std::cout << "New Request !" << std::endl;
+            std::cout << "New Request ! : ";
             int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, 2048 - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
+
+            // ! for testing =======
+            std::stringstream ss;
+            ss << clients[i].request;
+            std::string method;
+            std::string url;
+
+            ss >> method;
+            ss >> url;
+
+            // ! =============
+
+            std::cout << method << "   " << url << std::endl;
             std::cout << clients[i].request << std::endl;
+
             if(clients[i].requestSize > 2048)
             {
                 std::cout << "out of range" << std::endl;
@@ -134,14 +149,22 @@ void Server::handleRequest()
             }
             else
             {
-                showPage(clients[i].getClientSocket(), "index.html");
+                if (method == "GET") {
+                    getMethod(clients[i], url);
+                }
+                else if (method == "POST") {
 
-                if(kill_client(clients[i]))
-                    i--;
-                clients[i].requestSize = 0;
-                bzero(clients[i].request, 2048);
+                }
+                else if (method == "DELETE") {
+
+                }
             }
-            // showPage(clients[i].getClientSocket(),"index.html");
+            // showPage(clients[i].getClientSocket(), "index.html");
+
+            if(kill_client(clients[i]))
+                i--;
+            clients[i].requestSize = 0;
+            bzero(clients[i].request, 2048);
         }
     }
     usleep(500);
@@ -161,3 +184,26 @@ void Server::showPage(int socket ,std::string dir)
     send(socket , hello.c_str(), hello.size(), 0);
 
 }
+
+void Server::getMethod(Client &client, std::string url)
+{
+    std::cout << "GET Method !" << std::endl;
+    FILE *fd = fopen(url.c_str(), "rb");
+    if(fd == NULL)
+    {
+        std::cout << "ERROR: Could not open " << url << std::endl;
+        exit(-1); // error 404
+    }
+    else
+    {
+        if(ISDIR(fd))
+            std::cout << "File is a directory !" << std::endl;
+        else
+        {
+            showPage(client.getClientSocket(), url);
+        }
+    }
+
+}
+
+

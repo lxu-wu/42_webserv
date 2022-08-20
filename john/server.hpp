@@ -14,10 +14,11 @@
 #include <iostream>
 #include <netdb.h>
 #include <map>
+#include <sstream>
 
 
 #include "socket.hpp"
-#include "Client.hpp"
+#include "client.hpp"
 
 class Server
 {
@@ -30,6 +31,8 @@ class Server
         void showError(int err);
         bool kill_client(Client client);
 
+        void getMethod(Client &client, std::string url);
+
         std::vector<Socket *> getSocketList() {return sockets; }
         std::vector<Client> getClientsList() {return clients; }
 
@@ -38,8 +41,6 @@ class Server
         std::vector<Socket *> sockets;
         std::vector<Client> clients;
         std::map<int , std::string> errors;
-
-
 
         fd_set _read;
         fd_set _write;
