@@ -20,6 +20,7 @@
 #include "colors.hpp"
 #include "socket.hpp"
 #include "client.hpp"
+#include "webserv.hpp"
 
 #define MAX_REQUEST 2048
 
@@ -39,11 +40,13 @@ class Server
         std::vector<Socket *> getSocketList() {return sockets; }
         std::vector<Client> getClientsList() {return clients; }
 
+        Conf info;
 
     private :
         std::vector<Socket *> sockets;
         std::vector<Client> clients;
         std::map<int , std::string> errors;
+
 
         fd_set _read;
         fd_set _write;

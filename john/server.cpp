@@ -11,10 +11,10 @@ std::string allow[2] = {
 
 void Server::listAllSockets()
 {
-    for(int i = 0; i < NUM_SOCKS; i++)
+    for(int i = 0; i < info.getServers().size(); i++)
     {
         Socket *socket = new Socket;
-        socket->setup(ports[i]);
+        socket->setup(stoi(info.getServers()[i]->getListen()));
         sockets.push_back(socket);
     }
 	errors.insert(std::make_pair(200, "200 OK"));

@@ -154,6 +154,7 @@ class Conf
 		void stock_data();
 		void print_all_data();
 		void check_data();
+		std::vector<Servers*> getServers() { return _servers; }
 	
 	private:
 		std::vector<Servers*>		_servers;
