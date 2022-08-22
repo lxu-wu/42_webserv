@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <ctime>
 
+#include "webserv.hpp"
 #include "server.hpp"
 
 void deleteallfd(Server serv)
@@ -28,6 +29,18 @@ int main(int ac, char **av)
     //     std::cerr << "Usage : ./Webserv <config_file> " << std::endl;
     //     return 0;
     // }
+    // Conf data;
+	// try
+	// {
+	// 	parsing(ac, av, data);
+	// }
+	// catch(const std::exception& e)
+	// {
+	// 	std::cerr << e.what() << std::endl;
+	// 	return (1);
+	// }
+	// data.print_all_data();
+
     Server serv;
     serv.listAllSockets();
 
