@@ -1,4 +1,5 @@
 #include "server.hpp"
+#include <stdlib.h>
 
 #define NUM_SOCKS 3
 
@@ -16,22 +17,35 @@ void Server::listAllSockets()
         socket->setup(ports[i]);
         sockets.push_back(socket);
     }
-    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
-    errors.insert(std::pair<int, std::string>(403, "Forbidden"));
-    errors.insert(std::pair<int, std::string>(404, "Not Found"));
-    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
-    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
-    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
-    errors.insert(std::pair<int, std::string>(400, "Bad Request"));
+	errors.insert(std::make_pair(200, "200 OK"));
+	errors.insert(std::make_pair(201, "201 Created"));
+	errors.insert(std::make_pair(204, "204 No Content"));
+	errors.insert(std::make_pair(300, "300 Multiple Choices"));
+	errors.insert(std::make_pair(301, "301 Moved Permanently"));
+	errors.insert(std::make_pair(302, "302 Found"));
+	errors.insert(std::make_pair(303, "303 See Other"));
+	errors.insert(std::make_pair(307, "307 Temporary Redirect"));
+	errors.insert(std::make_pair(400, "400 Bad Request"));
+	errors.insert(std::make_pair(404, "404 Not Found"));
+	errors.insert(std::make_pair(405, "405 Method Not Allowed"));
+	errors.insert(std::make_pair(408, "408 Request Timeout"));
+	errors.insert(std::make_pair(411, "411 Length Required"));
+	errors.insert(std::make_pair(413, "413 Request Entity Too Large"));
+	errors.insert(std::make_pair(414, "414 Request-URI Too Long"));
+	errors.insert(std::make_pair(500, "500 Internal Server Error"));
+	errors.insert(std::make_pair(502, "502 Bad Gateway"));
+	errors.insert(std::make_pair(505, "505 HTTP Version Not Supported"));
 }
 
 
-void Server::showError(int err)
+void Server::showError(int err, Client &client)
 {
     std::map<int , std::string>::iterator it = errors.find(err);
     if(it != errors.end())
     {
-        std::cout << "Show error : " << err << " !" << std::endl;
+        std::cout << colors::on_bright_red << "Show error : " << it->first << " : " << it->second << " !" << colors::on_grey << std::endl;
+        std::string msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
+        send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
     }
 }
 
@@ -79,7 +93,7 @@ void Server::acceptClient()
                 perror("Connect");
                 exit(-1);
             }
-            std::cout << "New connection !" << std::endl;
+            std::cout << colors::green << "New connection !" << std::endl;
         }
     }
 }
@@ -108,7 +122,7 @@ void Server::handleRequest()
     {
         if(FD_ISSET(clients[i].getClientSocket(), &_read))
         {
-            std::cout << "New Request ! : ";
+            std::cout << colors::bright_cyan << "New Request ! : ";
             int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, 2048 - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
 
@@ -120,30 +134,31 @@ void Server::handleRequest()
 
             ss >> method;
             ss >> url;
+            method = "GET";
 
             // ! =============
 
-            std::cout << method << "   " << url << std::endl;
-            std::cout << clients[i].request << std::endl;
+            std::cout << colors::yellow << method << " " << url << std::endl;
+            std::cout << colors::grey << clients[i].request << std::endl;
 
             if(clients[i].requestSize > 2048)
             {
-                std::cout << "out of range" << std::endl;
-                showError(403);
+                std::cout << colors::on_bright_red << "out of range" << std::endl;
+                showError(413, clients[i]);
                 if(kill_client(clients[i]))
                     i--;
                 continue;
             }
             if(Reqsize == 0)
             {
-                std::cout << "Connection is closed !" << std::endl;
+                std::cout << colors::on_bright_red << "Connection is closed !" << std::endl;
                 kill_client(clients[i]);
                 i--;
             }
             else if (Reqsize < 0)
             {
                 // std::cout << "Connection is closed !" << std::endl;
-                showError(403);
+                showError(413, clients[i]);
                 kill_client(clients[i]);
                 i--;
             }
@@ -170,13 +185,16 @@ void Server::handleRequest()
     usleep(500);
 }
 
-void Server::showPage(int socket ,std::string dir)
+void Server::showPage(int socket, std::string dir)
 {
-    int fd = open(dir.c_str(), O_RDONLY);
-    if(fd < 0)
-        return;
+    FILE *fd = fopen(dir.c_str(), "rb");
+    if(fd == NULL)
+    {
+        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << std::endl;
+        return ;
+    }
     char file[2048];
-    int len = read(fd, file, 2048);
+    size_t len = fread(file, 1, 2048, fd);
     // std::cout << file << std::endl;
     
     std::string data(file, len);
@@ -187,17 +205,20 @@ void Server::showPage(int socket ,std::string dir)
 
 void Server::getMethod(Client &client, std::string url)
 {
-    std::cout << "GET Method !" << std::endl;
+    url = url.substr(1, url.end() - url.begin());
+    std::cout << colors::bright_yellow << "GET Method !" << std::endl;
     FILE *fd = fopen(url.c_str(), "rb");
+    struct stat path_stat;
+    stat(url.c_str(), &path_stat);
     if(fd == NULL)
     {
-        std::cout << "ERROR: Could not open " << url << std::endl;
-        exit(-1); // error 404
+        std::cout << colors::on_bright_red << "ERROR: Could not open "<< url << colors::on_grey << std::endl;
+        showError(404, client);
     }
     else
     {
-        if(ISDIR(fd))
-            std::cout << "File is a directory !" << std::endl;
+        if(S_ISDIR(path_stat.st_mode))
+            std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
         else
         {
             showPage(client.getClientSocket(), url);

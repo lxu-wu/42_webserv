@@ -16,6 +16,7 @@
 
 #include "socket.hpp"
 #include "client.hpp"
+#include "colors.hpp"
 
 class Socket
 {

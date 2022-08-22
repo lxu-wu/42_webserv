@@ -26,7 +26,7 @@ void Socket::setup(size_t port) {
     {
         time_t now = time(0);
         tm *ltm = localtime(&now);
-        std::cout << "[" << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "]" << "[" << port << "] listening ..." << std::endl;
+        std::cout << colors::bright_yellow << "[" << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "]" << "[" << port << "] listening ..." << std::endl;
     }
 }
 

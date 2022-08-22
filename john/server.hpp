@@ -17,8 +17,10 @@
 #include <sstream>
 
 
+#include "colors.hpp"
 #include "socket.hpp"
 #include "client.hpp"
+#include <sys/stat.h>
 
 class Server
 {
@@ -28,7 +30,7 @@ class Server
         void acceptClient(); // accept client and register them in vec
         void handleRequest(); // handle GET POST
         void showPage(int socket, std::string dir);
-        void showError(int err);
+        void showError(int err, Client &client);
         bool kill_client(Client client);
 
         void getMethod(Client &client, std::string url);
