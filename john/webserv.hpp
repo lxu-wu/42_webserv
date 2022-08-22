@@ -6,9 +6,10 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/19 18:09:01 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/22 16:45:17 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
@@ -179,5 +180,6 @@ class NotINT : EXCEPTION {WHAT throw () { return ("Error: Argument needs to be a
 class MethWrong : EXCEPTION {WHAT throw () { return ("Error: Method is wrong"); }};
 class ErrorPage : EXCEPTION {WHAT throw () { return ("Error: Error page is wrong"); }};
 class DirTwice : EXCEPTION {WHAT throw () { return ("Error: Two times the same directive"); }};
+class RequestErr : EXCEPTION {WHAT throw () { return ("Error: Request method wrong"); }};
 
 #endif

@@ -1,4 +1,6 @@
 #include "server.hpp"
+#include "tim_requete.hpp"
+#include "webserv.hpp"
 #include <stdlib.h>
 
 #define NUM_SOCKS 3
@@ -132,18 +134,12 @@ void Server::handleRequest()
             std::cout << clients[i].requestSize << std::endl;
 
             // ! for testing =======
-            std::stringstream ss;
-            ss << clients[i].request;
-            std::string method;
-            std::string url;
-
-            ss >> method;
-            ss >> url;
-            method = "GET";
-
+            Tim_requete requete(clients[i].request);
+            if (!requete.check_tim())
+                throw RequestErr();
             // ! =============
 
-            std::cout << colors::yellow << method << " " << url << std::endl;
+            std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
             std::cout << colors::grey << clients[i].request << std::endl;
 
             if(clients[i].requestSize > 2048)
@@ -169,13 +165,13 @@ void Server::handleRequest()
             }
             else
             {
-                if (method == "GET") {
-                    getMethod(clients[i], url);
+                if (requete.getMethod() == "GET") {
+                    getMethod(clients[i], requete.getUrl());
                 }
-                else if (method == "POST") {
+                else if (requete.getMethod() == "POST") {
 
                 }
-                else if (method == "DELETE") {
+                else if (requete.getMethod() == "DELETE") {
 
                 }
             }
