@@ -15,12 +15,13 @@
 #include <netdb.h>
 #include <map>
 #include <sstream>
-
+#include <sys/stat.h>
 
 #include "colors.hpp"
 #include "socket.hpp"
 #include "client.hpp"
-#include <sys/stat.h>
+
+#define MAX_REQUEST 2048
 
 class Server
 {

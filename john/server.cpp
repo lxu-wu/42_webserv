@@ -86,6 +86,9 @@ void Server::acceptClient()
         if(FD_ISSET(sockets[i]->getServerSocket(), &_read))
         {
             Client tmp;
+
+            bzero(tmp.request, 2048);
+            tmp.requestSize = 0;
             tmp.setSocketClient(accept(sockets[i]->getServerSocket(), (sockaddr *)&addrclient, &clientSize));
             clients.push_back(tmp);
             if(sockets[i]->getServerSocket() < 0)
@@ -123,8 +126,10 @@ void Server::handleRequest()
         if(FD_ISSET(clients[i].getClientSocket(), &_read))
         {
             std::cout << colors::bright_cyan << "New Request ! : ";
-            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, 2048 - clients[i].requestSize, 0);
+            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
+
+            std::cout << clients[i].requestSize << std::endl;
 
             // ! for testing =======
             std::stringstream ss;
@@ -157,7 +162,7 @@ void Server::handleRequest()
             }
             else if (Reqsize < 0)
             {
-                // std::cout << "Connection is closed !" << std::endl;
+                std::cout << "Connection is closed !" << std::endl;
                 showError(413, clients[i]);
                 kill_client(clients[i]);
                 i--;
@@ -174,8 +179,6 @@ void Server::handleRequest()
 
                 }
             }
-            // showPage(clients[i].getClientSocket(), "index.html");
-
             if(kill_client(clients[i]))
                 i--;
             clients[i].requestSize = 0;
