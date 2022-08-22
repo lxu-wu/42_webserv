@@ -17,6 +17,8 @@
 #include <sstream>
 #include <sys/stat.h>
 
+#include "webserv.hpp"
+#include "tim_requete.hpp"
 #include "colors.hpp"
 #include "socket.hpp"
 #include "client.hpp"
