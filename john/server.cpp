@@ -5,12 +5,6 @@
 
 #define NUM_SOCKS 3
 
-int ports[NUM_SOCKS] = {8080, 8081, 8082};
-std::string allow[2] = {
-    "GET", "POST"
-};
-
-
 void Server::listAllSockets()
 {
     for(int i = 0; i < info.getServers().size(); i++)
@@ -88,7 +82,7 @@ void Server::acceptClient()
         if(FD_ISSET(sockets[i]->getServerSocket(), &_read))
         {
             Client tmp;
-
+            tmp.setNServer(i);
             bzero(tmp.request, 2048);
             tmp.requestSize = 0;
             tmp.setSocketClient(accept(sockets[i]->getServerSocket(), (sockaddr *)&addrclient, &clientSize));
@@ -128,21 +122,12 @@ void Server::handleRequest()
         if(FD_ISSET(clients[i].getClientSocket(), &_read))
         {
             std::cout << colors::bright_cyan << "New Request ! : ";
-            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, MAX_REQUEST - clients[i].requestSize, 0);
+            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize,
+                MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
 
-            std::cout << clients[i].requestSize << std::endl;
 
-            // ! for testing =======
-            Tim_requete requete(clients[i].request);
-            if (!requete.check_tim())
-                throw RequestErr();
-            // ! =============
-
-            std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
-            std::cout << colors::grey << clients[i].request << std::endl;
-
-            if(clients[i].requestSize > 2048)
+            if(clients[i].requestSize > MAX_REQUEST)
             {
                 std::cout << colors::on_bright_red << "out of range" << std::endl;
                 showError(413, clients[i]);
@@ -159,13 +144,33 @@ void Server::handleRequest()
             else if (Reqsize < 0)
             {
                 std::cout << "Connection is closed !" << std::endl;
-                showError(413, clients[i]);
+                showError(500, clients[i]);
                 kill_client(clients[i]);
                 i--;
             }
             else
             {
+                Tim_requete requete(clients[i].request);
+                if(!is_allowed(info.getServers()[clients[i].getNServer()]->getMethod(), requete.getMethod()))
+                {
+                    std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
+                    showError(405, clients[i]);
+                    kill_client(clients[i]);
+                    i--;
+                    continue;
+                }
+                if (!requete.check_tim())
+                    throw RequestErr();
+                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
+                std::cout << colors::grey << clients[i].request << std::endl;
+
+
+
+
+
+
                 if (requete.getMethod() == "GET") {
+                    std::cout << clients[i].getNServer() << std::endl;
                     getMethod(clients[i], requete.getUrl());
                 }
                 else if (requete.getMethod() == "POST") {
@@ -192,9 +197,13 @@ void Server::showPage(int socket, std::string dir)
         std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << std::endl;
         return ;
     }
-    char file[2048];
-    size_t len = fread(file, 1, 2048, fd);
-    // std::cout << file << std::endl;
+
+    fseek (fd , 0 , SEEK_END);
+    int lSize = ftell (fd);
+    rewind (fd);
+
+    char file[lSize];
+    size_t len = fread(file, 1, lSize, fd);
     
     std::string data(file, len);
     std::string hello = "HTTP/1.1 200 OK\n" + data;
@@ -226,4 +235,17 @@ void Server::getMethod(Client &client, std::string url)
 
 }
 
+bool Server::is_allowed(std::vector<std::string> methodlist, std::string methodreq)
+{
+    for(int i = 0; i < methodlist.size(); i++)
+    {
+        if(methodlist[i] == methodreq)
+            return true;
+    }
+    return false;
+}
 
+// std::string getRootPatch(std::string url)
+// {
+//     info.getServers()[i]
+// }

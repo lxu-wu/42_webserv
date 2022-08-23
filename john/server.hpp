@@ -36,6 +36,9 @@ class Server
         void showPage(int socket, std::string dir);
         void showError(int err, Client &client);
         bool kill_client(Client client);
+        bool is_allowed(std::vector<std::string> methodlist, std::string methodreq); // say if a method is allowed
+
+
 
         void getMethod(Client &client, std::string url);
 
