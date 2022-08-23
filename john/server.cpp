@@ -5,6 +5,11 @@
 
 #define NUM_SOCKS 3
 
+// TO DO
+// + Add parse url of req and root
+//
+
+
 void Server::listAllSockets()
 {
     for(int i = 0; i < info.getServers().size(); i++)
@@ -36,12 +41,20 @@ void Server::listAllSockets()
 
 void Server::showError(int err, Client &client)
 {
-    std::map<int , std::string>::iterator it = errors.find(err);
-    if(it != errors.end())
+    std::map<std::string , std::string>::iterator it2 = info.getServers()[client.getNServer()]->getError().find(std::to_string(err));
+    if(it2 != info.getServers()[client.getNServer()]->getError().end())
     {
-        std::cout << colors::on_bright_red << "Show error : " << it->first << " : " << it->second << " !" << colors::on_grey << std::endl;
-        std::string msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
-        send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+        showPage(client.getClientSocket(), it2->second);
+    }
+    else
+    {
+        std::map<int , std::string>::iterator it = errors.find(err);
+        if(it != errors.end())
+        {
+            std::cout << colors::on_bright_red << "Show error : " << it->first << " : " << it->second << " !" << colors::on_grey << std::endl;
+            std::string msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
+            send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+        }
     }
 }
 
@@ -163,15 +176,8 @@ void Server::handleRequest()
                     throw RequestErr();
                 std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
                 std::cout << colors::grey << clients[i].request << std::endl;
-
-
-
-
-
-
                 if (requete.getMethod() == "GET") {
-                    std::cout << clients[i].getNServer() << std::endl;
-                    getMethod(clients[i], requete.getUrl());
+                    getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
                 }
                 else if (requete.getMethod() == "POST") {
 
@@ -208,13 +214,13 @@ void Server::showPage(int socket, std::string dir)
     std::string data(file, len);
     std::string hello = "HTTP/1.1 200 OK\n" + data;
     send(socket , hello.c_str(), hello.size(), 0);
-
 }
 
 void Server::getMethod(Client &client, std::string url)
 {
-    url = url.substr(1, url.end() - url.begin());
     std::cout << colors::bright_yellow << "GET Method !" << std::endl;
+
+    url = getRootPatch(url, client.getNServer());
     FILE *fd = fopen(url.c_str(), "rb");
     struct stat path_stat;
     stat(url.c_str(), &path_stat);
@@ -226,13 +232,18 @@ void Server::getMethod(Client &client, std::string url)
     else
     {
         if(S_ISDIR(path_stat.st_mode))
+        {
             std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
+            if(strcmp(url.c_str(), "./") == 0)
+                showPage(client.getClientSocket(), info.getServers()[client.getNServer()]->getIndex());
+            else
+                rep_listing(client.getClientSocket(), url);
+        }
         else
         {
             showPage(client.getClientSocket(), url);
         }
     }
-
 }
 
 bool Server::is_allowed(std::vector<std::string> methodlist, std::string methodreq)
@@ -245,7 +256,40 @@ bool Server::is_allowed(std::vector<std::string> methodlist, std::string methodr
     return false;
 }
 
-// std::string getRootPatch(std::string url)
-// {
-//     info.getServers()[i]
-// }
+std::string Server::getRootPatch(std::string url, int i)
+{
+    // std::string root = info.getServers()[i]->getRoot();
+    std::string ret = info.getServers()[i]->getRoot() + url;
+    std::cout <<colors::green <<  ret << colors::grey<< std::endl;
+    return ret;
+}
+
+#include <dirent.h>
+void Server::rep_listing(int socket, std::string path)
+{
+    std::cout << colors::green << "Show Repository Listing" << std::endl;
+    DIR *dir;
+    struct dirent *ent;
+    std::string tosend = "HTTP/1.1 200 OK\n\n<!DOCTYPE html>\n<html>\n<body>\n<h1>" + path + "</h1>\n<pre>\n";
+    std::string data;
+
+
+    if ((dir = opendir (path.c_str())) != NULL)
+    {
+        while ((ent = readdir (dir)) != NULL)
+        {
+
+            tosend += "<a href=\""+ std::string(ent->d_name) + "\">" + std::string(ent->d_name) + "</a>\n";
+            std::cout << path + "    "  +  std::string(ent->d_name) << std::endl;
+        }
+        closedir (dir);
+    }
+    else
+    {
+        perror ("Directory listing");
+        return ;
+    }
+    tosend += "</pre>\n</body>\n</html>\n";
+    send(socket , tosend.c_str(), tosend.size(), 0);
+}
+

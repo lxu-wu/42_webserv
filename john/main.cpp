@@ -19,6 +19,7 @@ void deleteallfd(Server serv)
     {
         close(serv.getClientsList()[i].getClientSocket());
     }
+    std::cout << colors::green << "Clean All Fd" << std::endl;
 }
 
 
@@ -50,5 +51,7 @@ int main(int ac, char **av)
         serv.acceptClient();
         serv.handleRequest();
     }
+    
+    deleteallfd(serv);
 
 }

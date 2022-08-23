@@ -37,9 +37,9 @@ class Server
         void showError(int err, Client &client);
         bool kill_client(Client client);
         bool is_allowed(std::vector<std::string> methodlist, std::string methodreq); // say if a method is allowed
+        void rep_listing(int socket, std::string path);
 
-
-
+        std::string getRootPatch(std::string url, int i);
         void getMethod(Client &client, std::string url);
 
         std::vector<Socket *> getSocketList() {return sockets; }
