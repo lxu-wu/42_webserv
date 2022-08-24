@@ -41,13 +41,13 @@ void Server::listAllSockets()
 
 void Server::showError(int err, Client &client)
 {
-    std::map<std::string , std::string>::iterator it2 = info.getServers()[client.getNServer()]->getError().find(std::to_string(err));
-    if(it2 != info.getServers()[client.getNServer()]->getError().end())
-    {
-        showPage(client.getClientSocket(), it2->second);
-    }
-    else
-    {
+    // std::map<std::string , std::string>::iterator it2 = info.getServers()[client.getNServer()]->getError().find(std::to_string(err));
+    // if(it2 != info.getServers()[client.getNServer()]->getError().end())
+    // {
+    //     showPage(client.getClientSocket(), it2->second);
+    // }
+    // else
+    // {
         std::map<int , std::string>::iterator it = errors.find(err);
         if(it != errors.end())
         {
@@ -55,7 +55,7 @@ void Server::showError(int err, Client &client)
             std::string msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
             send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
         }
-    }
+    // }
 }
 
 void Server::waitClient()
@@ -148,22 +148,35 @@ void Server::handleRequest()
                     i--;
                 continue;
             }
-            if(Reqsize == 0)
+            if (Reqsize < 0)
             {
-                std::cout << colors::on_bright_red << "Connection is closed !" << std::endl;
+                std::cout << "Recv failed !" << std::endl;
+                showError(500, clients[i]);
                 kill_client(clients[i]);
                 i--;
             }
-            else if (Reqsize < 0)
+            else if(Reqsize == 0)
             {
-                std::cout << "Connection is closed !" << std::endl;
-                showError(500, clients[i]);
+                std::cout << colors::on_bright_red << "Connection is closed !" << std::endl;
                 kill_client(clients[i]);
                 i--;
             }
             else
             {
                 Tim_requete requete(clients[i].request);
+                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
+                std::cout << colors::grey << clients[i].request << std::endl;
+
+
+
+                if(10 > stoi(info.getServers()[clients[i].getNServer()]->getBody())) // ! change value
+                {
+                    // std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
+                    showError(413, clients[i]);
+                    kill_client(clients[i]);
+                    i--;
+                    continue;
+                }
                 if(!is_allowed(info.getServers()[clients[i].getNServer()]->getMethod(), requete.getMethod()))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
@@ -174,8 +187,6 @@ void Server::handleRequest()
                 }
                 if (!requete.check_tim())
                     throw RequestErr();
-                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
-                std::cout << colors::grey << clients[i].request << std::endl;
                 if (requete.getMethod() == "GET") {
                     getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
                 }
@@ -195,6 +206,19 @@ void Server::handleRequest()
     usleep(500);
 }
 
+std::string find_type(std::string dir)
+{
+    char *dot = strrchr((char *)dir.c_str(), '.');
+    if(strcmp(dot, ".jpeg") == 0) return "image/jpeg";
+    if(strcmp(dot, ".gif") == 0) return "image/gif";
+    if(strcmp(dot, ".png") == 0) return "image/png";
+    if(strcmp(dot, ".javascript") == 0) return "application/javascript";
+    if(strcmp(dot, ".mp4") == 0) return "video/mp4 ";
+    if(strcmp(dot, ".json") == 0) return "application/json";
+    if(strcmp(dot, ".pdf") == 0) return "application/pdf";
+    return "text/plain";
+}
+
 void Server::showPage(int socket, std::string dir)
 {
     FILE *fd = fopen(dir.c_str(), "rb");
@@ -203,16 +227,17 @@ void Server::showPage(int socket, std::string dir)
         std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << std::endl;
         return ;
     }
-
     fseek (fd , 0 , SEEK_END);
     int lSize = ftell (fd);
     rewind (fd);
+
+    std::string type = find_type(dir);
 
     char file[lSize];
     size_t len = fread(file, 1, lSize, fd);
     
     std::string data(file, len);
-    std::string hello = "HTTP/1.1 200 OK\n" + data;
+    std::string hello = std::string("HTTP/1.1 200 OK\n") + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n" + data;
     send(socket , hello.c_str(), hello.size(), 0);
 }
 
@@ -242,6 +267,22 @@ void Server::getMethod(Client &client, std::string url)
         else
         {
             showPage(client.getClientSocket(), url);
+            // FILE *fd = fopen(url.c_str(), "rb");
+            // if(fd == NULL)
+            // {
+            //     std::cout << colors::on_bright_red << "Error: Couldn't open " << url << std::endl;
+            //     return ;
+            // }
+            // fseek (fd , 0 , SEEK_END);
+            // int lSize = ftell (fd);
+            // rewind (fd);
+
+            // std::string type = find_type(url);
+            // // header.insert(std::pair("Content-Lenght", std::to_string(lSize)));
+            // // header.insert(std::pair("Content-Type", type));
+
+
+
         }
     }
 }

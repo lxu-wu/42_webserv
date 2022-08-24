@@ -46,11 +46,13 @@ class Server
         std::vector<Client> getClientsList() {return clients; }
 
         Conf info;
+        std::map<std::string, std::string> header;
 
     private :
         std::vector<Socket *> sockets;
         std::vector<Client> clients;
         std::map<int , std::string> errors;
+
 
 
         fd_set _read;
