@@ -6,16 +6,16 @@
 #include <unistd.h>
 #include <ctime>
 
-#include "webserv.hpp"
-#include "server.hpp"
+#include "parsing/webserv.hpp"
+#include "server/server.hpp"
 
 void deleteallfd(Server serv)
 {
-    for(int i = 0; i < serv.getSocketList().size(); i++)
+    for(size_t i = 0; i < serv.getSocketList().size(); i++)
     {
         close(serv.getSocketList()[i]->getServerSocket());
     }
-    for(int i = 0; i < serv.getClientsList().size(); i++)
+    for(size_t i = 0; i < serv.getClientsList().size(); i++)
     {
         close(serv.getClientsList()[i].getClientSocket());
     }
@@ -44,7 +44,7 @@ int main(int ac, char **av)
     serv.info = data;
 	serv.info.print_all_data(); // ! For test
 
-    serv.listAllSockets();
+    serv.initServer();
     while(1)
     {
         serv.waitClient();
