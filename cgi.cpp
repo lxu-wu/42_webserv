@@ -13,81 +13,105 @@ char *searchPath(char **envp)
     return (0);
 }
 
+std::string fileExtent(char *filePwd)
+{
+    size_t  i = 0;
+
+    while (filePwd[i])
+        i++;
+    while(i && filePwd[i] != '.')
+        i--;
+    if (!strcmp(&filePwd[i], ".py"))
+        return "/python2.7";
+    if (!strcmp(&filePwd[i], ".pl"))
+        return "/perl";
+    return "\0";
+}
+
 char    *searchExec(char *filePwd, char **envp)
 {
     char *envPath = searchPath(envp);
 
+    printf("1\n");
     if (!envPath)
         return (0);
 
     std::string path;
     std::string token;
-    std::string exec = "/python";
+    std::string const exec = fileExtent(filePwd);
+
+    if (exec == "\0")
+    {
+        std::cerr << "uncompatible CGI-script" << std::endl;
+        return (0);
+    }
+
     char *tmp = strdup(envPath);
-
+    char *ret;
+    printf("1\n");
     token = std::string(strtok(tmp, ":"));
-    free(tmp);
-    tmp = 0;
-
+    ret = 0;
+printf("2\n");
     while (token.c_str())
     {
+        std::cout << token << std::endl;
         path = token + exec;
+        std::cout << path << std::endl;
         if (!access(path.c_str(), X_OK))
         {
-            tmp = strdup(path.c_str());
-            if (!tmp)
+            ret = strdup(path.c_str());
+            if (!ret)
             {
                 perror("strdup searchExec:1");
                 exit(1);
             }
-            return (tmp);
+            free(tmp);
+            return (ret);
         }
         token = std::string(strtok(0, ":"));
     }
-    path = filePwd;
-    if (!access(path.c_str(), X_OK))
-    {
-        tmp = strdup(path.c_str());
-        if (!tmp)
-        {
-            perror("strdup searchExec:2");
-            exit(1);
-        }
-        return (tmp);
-    }
+    printf("3\n");
+    free(tmp);
     return (0);
 }
 
-// char **newEnv(char **envp)
-// {
-//     char **my_env;
+char **newEnv(char *filePwd, char **envp)
+{
+    char **my_env;
 
-//     size_t  i = 0;
+    size_t  i = 0;
 
-//     while (envp[i])
-//         i++;
+    while (envp[i])
+        i++;
     
-//     my_env = malloc(sizeof(char *) * (i + 19 + 1));
-//     if (!my_env)
-//     {
-//         perror("malloc newEnv");
-//         exit(1);
-//     }
+    my_env = (char **)malloc(sizeof(char *) * (i + 19 + 1));
+    if (!my_env)
+    {
+        perror("malloc newEnv");
+        exit(1);
+    }
 
-//     i = 0;
-//     while (envp[i])
-//     {
-//         my_env[i] = envp[i];
-//         i++;
-//     }
-
-// }
+    i = 0;
+    while (envp[i])
+    {
+        my_env[i] = envp[i];
+        i++;
+    }
+    my_env[i++] = (char*)("AUTH_TYPE=bonjour");
+    // my_env[i++] = "CONTENT_TYPE=text/html";
+    // my_env[i++] = "GATEWAY_INTERFACE=CGI/1.1";
+    // my_env[i++] = (char *)(std::string("PATH_INFO=") + std::string(filePwd)).c_str();
+    my_env[i] = 0;
+    return (my_env);
+}
 
 char *execCGI(char *filePwd, char **envp)
 {
     char *execPwd = searchExec(filePwd, envp);
     if (!execPwd)
+    {
         return (0);
+    }
 
     int fdOut;
     int fd[2];
@@ -99,9 +123,7 @@ char *execCGI(char *filePwd, char **envp)
 
     char **my_env;
 
-    for(int i = 0; tab[i];i++)
-        printf("%s\n", tab[i]);
-    // my_env = newEnv(envp);
+    my_env = newEnv(filePwd, envp);
 
     pipe(fd);
     pid_t pid = fork();
@@ -119,7 +141,7 @@ char *execCGI(char *filePwd, char **envp)
             exit(1);
         }
         close(fd[0]);
-        if (execve(tab[0], tab, 0) == -1)
+        if (execve(tab[0], tab, my_env) == -1)
         {
             perror("execve");
             exit(1);
@@ -130,7 +152,7 @@ char *execCGI(char *filePwd, char **envp)
     else
     {
         waitpid(pid, 0, 0);
-
+        free(my_env);
         free(tab[0]);
         char *retBuff;
         struct stat statBuff;
@@ -166,7 +188,10 @@ char *execCGI(char *filePwd, char **envp)
 
 int main(int argc, char **argv, char **envp)
 {
-    std::cout << execCGI((char *)"test.py", envp);
-    system("leaks a.out");
+    char * a = execCGI((char *)"test.py", envp);
+    printf("1\n");
+    if (a)
+        std::cout << a;
+    // system("leaks a.out");
     return (0);
 }
