@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/26 12:55:43 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/26 13:22:25 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,7 @@ class Servers
 		void stock_location(std::string line, int pos);
 		bool check_method();
 		bool check_error_page();
+		bool check_root();
 
 	private:
 		std::string							_listen;
@@ -181,5 +182,6 @@ class MethWrong : EXCEPTION {WHAT throw () { return ("Error: Method is wrong"); 
 class ErrorPage : EXCEPTION {WHAT throw () { return ("Error: Error page is wrong"); }};
 class DirTwice : EXCEPTION {WHAT throw () { return ("Error: Two times the same directive"); }};
 class RequestErr : EXCEPTION {WHAT throw () { return ("Error: Request method wrong"); }};
+class RootErr : EXCEPTION {WHAT throw () { return ("Error: In root path"); }};
 
 #endif

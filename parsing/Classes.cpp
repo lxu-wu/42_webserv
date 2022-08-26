@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/13 14:48:09 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/19 18:22:02 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/26 13:28:32 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,31 @@ bool Servers::check_error_page()
 		if (!my_atoi(it->first) || (it->second).find(".html") == std::string::npos)
 			return false;
 		it++;
+	}
+	return true;
+}
+
+/* Check for root */
+bool Servers::check_root()
+{
+	if (_root.length() <= 2)
+	{
+		if (_root == "./")
+			return true;
+		return false;
+	}
+	if (_root[_root.length() - 1] != '/')
+		_root += "/";
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		if (_locations[i]->getRoot().length() <= 2)
+		{
+			if (_locations[i]->getRoot() == "./")
+				continue;
+			return false;
+		}
+		if (_locations[i]->getRoot()[_locations[i]->getRoot().length() - 1] != '/')
+			_locations[i]->setRoot(_locations[i]->getRoot() + "/");
 	}
 	return true;
 }
@@ -143,6 +168,8 @@ void Conf::check_data()
 			throw ErrorPage();
 		if (!_servers[i]->check_method())
 			throw MethWrong();
+		if (!_servers[i]->check_root())
+			throw RootErr();
 	}
 	
 }
