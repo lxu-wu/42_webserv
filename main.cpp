@@ -36,7 +36,8 @@ int main(int ac, char **av)
 		std::cerr << e.what() << std::endl;
 		return (1);
 	}
-    data.print_all_data(); //USED BY TIM FOR TEST
+
+    //data.print_all_data(); //USED BY TIM FOR TEST
     serv.info = data;
 	//serv.info.print_all_data(); // ! For test
 
