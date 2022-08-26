@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jdecorte42 <jdecorte42@student.42.fr>      +#+  +:+       +#+        */
+/*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/24 17:22:21 by jdecorte42       ###   ########.fr       */
+/*   Updated: 2022/08/26 12:55:43 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,7 +170,7 @@ class Conf
 #define EXCEPTION public std::exception
 #define WHAT const char * what () const
 
-class ArgvErr : EXCEPTION {WHAT throw () { return ("Error: Arguments incorrect"); }};
+class ArgvErr : EXCEPTION {WHAT throw () { return ("Usage : ./Webserv <config_file>"); }};
 class MissingArgv : EXCEPTION {WHAT throw () { return ("Error: Missing argument after a directive"); }};
 class TooMuchArgv : EXCEPTION {WHAT throw () { return ("Error: Too much arguments after a directive"); }};
 class DirWrongPlace : EXCEPTION {WHAT throw () { return ("Error: Directive is in wrong place"); }};
