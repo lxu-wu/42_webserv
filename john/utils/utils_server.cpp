@@ -4,10 +4,10 @@
 
 void Server::initServer()
 {
-    for(size_t i = 0; i < info.getServers().size(); i++)
+    for(size_t i = 0; i < servers.size(); i++)
     {
         Socket *socket = new Socket;
-        socket->setup(stoi(info.getServers()[i]->getListen()));
+        socket->setup(stoi(servers[i]->getListen()));
         sockets.push_back(socket);
     }
 	errors.insert(std::make_pair(200, "200 OK"));
@@ -32,9 +32,9 @@ void Server::initServer()
 
 void Server::showError(int err, Client &client)
 {
-    std::map<std::string , std::string> err_map = info.getServers()[client.getNServer()]->getError();
+    std::map<std::string , std::string> err_map = servers[client.getNServer()]->getError();
     std::map<std::string , std::string>::iterator it2 = err_map.find(std::to_string(err));
-    if(it2 != info.getServers()[client.getNServer()]->getError().end())
+    if(it2 != servers[client.getNServer()]->getError().end())
     {
         showPage(client, it2->second);
     }
@@ -95,7 +95,7 @@ bool Server::is_allowed(std::vector<std::string> methodlist, std::string methodr
 std::string Server::getRootPatch(std::string url, int i)
 {
     // std::string root = info.getServers()[i]->getRoot();
-    std::string ret = info.getServers()[i]->getRoot() + url;
+    std::string ret = servers[i]->getRoot() + url;
     std::cout <<colors::green <<  ret << colors::grey<< std::endl;
     return ret;
 }

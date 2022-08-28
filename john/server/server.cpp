@@ -103,7 +103,7 @@ void Server::handleRequest()
 
 
 
-                if(10 > stoi(info.getServers()[clients[i].getNServer()]->getBody())) // ! change value
+                if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
                 {
                     // std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
                     showError(413, clients[i]);
@@ -111,7 +111,7 @@ void Server::handleRequest()
                     i--;
                     continue;
                 }
-                if(!is_allowed(info.getServers()[clients[i].getNServer()]->getMethod(), requete.getMethod()))
+                if(!is_allowed(servers[clients[i].getNServer()]->getMethod(), requete.getMethod()))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
                     showError(405, clients[i]);
@@ -128,7 +128,7 @@ void Server::handleRequest()
 
                 }
                 else if (requete.getMethod() == "DELETE") {
-
+                    deleteMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
                 }
             }
             if(kill_client(clients[i]))
@@ -191,8 +191,8 @@ void Server::getMethod(Client &client, std::string url)
         if(S_ISDIR(path_stat.st_mode))
         {
             std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
-            if(strcmp(url.c_str(), "./") == 0)
-                showPage(client, info.getServers()[client.getNServer()]->getIndex());
+            if(strcmp(url.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
+                showPage(client, servers[client.getNServer()]->getIndex());
             else
                 rep_listing(client.getClientSocket(), url);
         }
@@ -201,6 +201,50 @@ void Server::getMethod(Client &client, std::string url)
             showPage(client, url);
         }
         fclose(fd);
+    }
+}
+
+void Server::deleteMethod(Client &client, std::string url)
+{
+    std::cout << colors::bright_yellow << "DELETE Method !" << std::endl;
+    FILE *fd = fopen(url.c_str(), "r");
+    if(!fd)
+    {
+        showError(404, client);
+        return ;
+    }
+    fclose(fd);
+    std::remove(url.c_str());
+
+    std::string tosend = "HTTP/1.1 200 OK\n";
+    int ret = send(client.getClientSocket() ,tosend.c_str(), tosend.size(), 0);
+    if(ret < 0)
+        showError(500, client);
+    else if (ret == 0)
+		showError(400, client);
+    std::cout << colors::green << url << " as been delete !" << std::endl;
+}
+
+void Server::postMethod(Client &client, std::string url)
+{
+	struct stat buf;
+	lstat(url.c_str(), &buf);
+    if(S_ISDIR(buf.st_mode)) {
+        // if()
+    }
+    else
+    {
+        int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
+        if(fd < 0)
+        {
+            showError(500, client);
+            return ;
+        }
+        // ADD to queue
+        int r = write(fd, client.request, 2049);
+        if(r < 0)
+            showError(500, client);
+        close(fd);
     }
 }
 

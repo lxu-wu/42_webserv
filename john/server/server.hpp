@@ -21,7 +21,6 @@
 #include "../parsing/webserv.hpp"
 #include "../parsing/tim_requete.hpp"
 #include "../utils/colors.hpp"
-#include "../server/server.hpp"
 #include "../client/client.hpp"
 #include "socket.hpp"
 
@@ -42,12 +41,14 @@ class Server
 
         std::string getRootPatch(std::string url, int i);
         void getMethod(Client &client, std::string url);
+        void deleteMethod(Client &client, std::string url);
+        void postMethod(Client &client, std::string url);
 
         std::vector<Socket *> getSocketList() {return sockets; }
         std::vector<Client> getClientsList() {return clients; }
 
-        Conf info;
-        std::map<std::string, std::string> header;
+
+        std::vector<Servers*> servers;
 
     private :
         std::vector<Socket *> sockets;
