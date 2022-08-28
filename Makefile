@@ -1,23 +1,28 @@
-NAME =	Server
-SRCS =	main.cpp parse_conf.cpp Classes.cpp
+NAME = webserv
 
-OBJ = $(SRCS:.cpp=.o)
+SRCS_PATH		= ./srcs
+INCS_PATH		= ./includes
 
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g
-CXX = c++
-rm = rm -rf
+SRCS =	main.cpp client/client.cpp parsing/parse_conf.cpp parsing/Classes.cpp parsing/tim_requete.cpp \
+		server/server.cpp server/socket.cpp utils/utils_server.cpp
 
-all : $(NAME)
+OBJS			= $(SRCS:.cpp=.o)
 
-$(NAME):	$(OBJ)
-	$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
+CXX				= clang++
+CXXFLAGS		= -Wall -Werror -Wextra -std=c++98
+# CXXFLAGS		= -std=c++98 -fsanitize=address
+
+all:			$(NAME)
+
+$(NAME):		$(OBJS)
+				$(CXX) $(CXXFLAGS) -I $(INCS_PATH) -o $(NAME) $(OBJS)
 
 clean:
-	$(RM) $(OBJ)
+				rm -f $(OBJS)
 
-fclean: clean
-	$(RM) $(NAME)
+fclean:			clean
+				rm -f $(NAME)
 
-re: fclean all
+re:				fclean $(NAME)
 
-.PHONY: re bonus clean fclean all
+.PHONY:			all clean fclean re
