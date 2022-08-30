@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 16:18:03 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/26 16:59:02 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/30 14:51:24 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <sstream>
 # include <map>
 # include <iterator>
+# include <string>
 
 class Tim_requete
 {
@@ -28,15 +29,24 @@ class Tim_requete
 		std::string getMethod() const	{return _method;};
 		std::string getUrl() const		{return _url;};
 		std::string getProtocol() const	{return _protocol;};
+		std::string getBoundary() const	{return _boundary;};
 
 		/* Functions */
 		bool check_tim();
+		void make_body(std::stringstream& ss, std::string token);
 		
 	private:
 		std::string							_method;
 		std::string							_url;
 		std::string							_protocol;
+		std::string							_boundary;
+		std::string							_name;//content name
+		std::string							_file_name;
+		std::string							_type;//content type
+		std::string							_body;//content body
+		size_t								_len;
 		std::map<std::string, std::string>	_request;
+		std::map<std::string, std::string>	_text;//if more than 1 request + no content type
 };
 
 #endif
