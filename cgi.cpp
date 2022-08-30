@@ -22,9 +22,9 @@ std::string fileExtent(char *filePwd)
     while(i && filePwd[i] != '.')
         i--;
     if (!strcmp(&filePwd[i], ".py"))
-        return "/python2.7";
+        return "/usr/bin/python2.7";
     if (!strcmp(&filePwd[i], ".pl"))
-        return "/perl";
+        return "/usr/bin/perl";
     return "\0";
 }
 
@@ -48,10 +48,9 @@ char    *searchExec(char *filePwd, char **envp)
 
     char *tmp = strdup(envPath);
     char *ret;
-    printf("1\n");
+
     token = std::string(strtok(tmp, ":"));
     ret = 0;
-printf("2\n");
     while (token.c_str())
     {
         std::cout << token << std::endl;
@@ -105,7 +104,7 @@ char **newEnv(char *filePwd, char **envp)
     return (my_env);
 }
 
-char *execCGI(char *filePwd, char **envp)
+std::string execCGI(char *filePwd, char **envp, Tim_requete req)
 {
     char *execPwd = searchExec(filePwd, envp);
     if (!execPwd)
@@ -113,8 +112,9 @@ char *execCGI(char *filePwd, char **envp)
         return (0);
     }
 
-    int fdOut;
-    int fd[2];
+    int fdIn;
+    int fd_in[2];
+    int fd_out[2];
     char *tab[3];
 
     tab[0] = execPwd;
@@ -125,7 +125,8 @@ char *execCGI(char *filePwd, char **envp)
 
     my_env = newEnv(filePwd, envp);
 
-    pipe(fd);
+    pipe(fd_in);
+    pipe(fd_out);
     pid_t pid = fork();
 
     if (pid == -1)
@@ -133,62 +134,99 @@ char *execCGI(char *filePwd, char **envp)
         perror("fork()");
         exit(1);
     }
+
+
+
     if (pid == 0)
     {
-        if (dup2(fd[1], 1) == -1)
+        if (dup2(fd_in[0], 0) == -1)
         {
             perror("dup2");
             exit(1);
         }
-        close(fd[0]);
-        if (execve(tab[0], tab, my_env) == -1)
+        if (dup2(fd_out[1], 1) == -1)
         {
-            perror("execve");
+            perror("dup2");
             exit(1);
         }
-        close(fd[1]);
-        exit(0);
+        close(fd_out[0]);
+        close(fd_in[1]);
+        execve(tab[0], tab, my_env);
+        perror("execve");
+        close(fd_out[1]);
+        close(fd_in[0]);
+        exit(1);
     }
+
+
+
+
     else
     {
+        fdIn = dup(0);
+        if (fdIn == 0)
+        {
+            perror("dup");
+            exit(1);
+        }
+        if (dup2(fd_in[0], 0) == -1)
+        {
+            perror("dup2");
+            exit(1);
+        }
+        if (req.getBody())
+        {
+            write(fd_in[0], req.getLeijie(), req.getLen());//req.getBody ou req.getLeijie
+        }
         waitpid(pid, 0, 0);
+        close(fd_in[0]);
+        close(fd_in[1]);
+        if (dup2(fdIn, 0) == -1)
+        {
+            perror("dup2");
+            exit(1);
+        }
         free(my_env);
         free(tab[0]);
-        char *retBuff;
-        struct stat statBuff;
+
+
+        char buff[32768] = {0};
+        std::string ret = "";
         size_t  i;
 
-        if (fstat(fd[0], &statBuff) == -1)
-        {
-            perror("fstat");
-            exit(1);
-        }
 
-        retBuff = static_cast<char *>(malloc(statBuff.st_size));
-        if (!retBuff)
-        {
-            perror("malloc execCGI");
-            exit(1);
-        }
 
-        close(fd[1]);
-        i = read(fd[0], retBuff, statBuff.st_size);
+
+        close(fd_out[1]);
+        i = read(fd_out[0], buff, 32767);
         if (i == -1)
         {
             perror("read");
             exit(1);
         }
-        close(fd[0]);
-        retBuff[i] = 0;
-        return retBuff;
+        ret += std::string(buff);
+        while (i < 0)
+        {
+            i = read(fd_out[0], buff, 32767);
+            if (i == -1)
+            {
+                perror("read");
+                exit(1);
+            
+            }
+            buff[i] = 0;
+            ret += std::string(buff);
+        }
+        close(fd_out[0]);
+        return ret;
     }
-    return 0;
+    return "";
 
 }
 
 int main(int argc, char **argv, char **envp)
 {
-    char * a = execCGI((char *)"test.py", envp);
+    std::string a = execCGI((char *)"test.py", envp, req);
     printf("1\n");
     if (a)
         std::cout << a;
