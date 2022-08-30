@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 16:18:30 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/30 15:45:26 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/30 16:55:53 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 Tim_requete::Tim_requete(std::string requete)
 {
+	_leijie = requete;
 	std::stringstream ss;
 	std::string token, line, key;
     ss << requete;
@@ -95,7 +96,7 @@ void Tim_requete::make_body(std::stringstream& ss, std::string token)
 		
 		if (token.find("filename=") != std::string::npos)
 		{
-			while (token.find(_boundary) == std::string::npos)
+			while (!token.empty() && token.find(_boundary) == std::string::npos)
 			{
 				body += token;
 				body += " ";
@@ -112,7 +113,7 @@ void Tim_requete::make_body(std::stringstream& ss, std::string token)
 			ss >> token;
 			_type = token;
 			ss >> token;
-			while (token.find(_boundary) == std::string::npos)
+			while (!token.empty() && token.find(_boundary) == std::string::npos)
 			{
 				body += token;
 				body += " ";
@@ -122,5 +123,8 @@ void Tim_requete::make_body(std::stringstream& ss, std::string token)
 			body.empty();
 		}
 	}
+	std::cout << "------NAME == " << _name << std::endl;
+	std::cout << "------FNAME == " << _file_name << std::endl;
 	std::cout << "------BODY == " << _body << std::endl;
+	std::cout << "------LEN == " << _len << std::endl;
 }

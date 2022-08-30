@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 16:18:03 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/30 15:46:46 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/30 16:56:13 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,11 @@ class Tim_requete
 		std::string getUrl() const		{return _url;};
 		std::string getProtocol() const	{return _protocol;};
 		std::string getBoundary() const	{return _boundary;};
+		std::string getName() const		{return _boundary;};
+		std::string getFileName() const	{return _file_name;};
+		std::string getType() const		{return _type;};
+		std::string getBody() const		{return _body;};
+		size_t		getLen() const		{return _len;};
 
 		/* Functions */
 		bool check_tim();
@@ -45,6 +50,7 @@ class Tim_requete
 		std::string							_type;//content type
 		std::string							_body;//content body
 		size_t								_len;
+		std::string							_leijie;//for LXU WU
 		std::map<std::string, std::string>	_request;
 		std::map<std::string, std::string>	_text;//if more than 1 request + no content type
 };
