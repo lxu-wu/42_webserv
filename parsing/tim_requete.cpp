@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 16:18:30 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/30 15:44:13 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/30 15:45:26 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,5 +122,5 @@ void Tim_requete::make_body(std::stringstream& ss, std::string token)
 			body.empty();
 		}
 	}
-	//std::cout << "------BODY == " << _body << std::endl;
+	std::cout << "------BODY == " << _body << std::endl;
 }

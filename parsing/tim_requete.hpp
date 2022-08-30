@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/22 16:18:03 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/30 14:51:24 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/30 15:46:46 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class Tim_requete
 		bool check_tim();
 		void make_body(std::stringstream& ss, std::string token);
 		
-	private:
+	protected:
 		std::string							_method;
 		std::string							_url;
 		std::string							_protocol;
