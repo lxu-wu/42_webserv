@@ -63,6 +63,26 @@ std::vector<std::string> newEnv(std::string filePwd, char **envp, Requete req)
     return (my_env);
 }
 
+char **vecToTab(std::vector<std::string> vec)
+{
+    char **tab;
+    int i = 0;
+
+    tab = (char **)malloc(sizeof(char *) * (vec.size() + 1));
+    if (!tab)
+    {
+        perror("malloc vecToTab");
+        exit(1);
+    }
+
+    for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); it++)
+    {
+        tab[i++] = (char *)(*it).c_str();
+    }
+    tab[i] = 0;
+    return tab;
+}
+
 std::string execCGI(std::string filePwd, char **envp, Requete req)
 {
     std::string execPwd = searchExec(filePwd, envp);
@@ -78,12 +98,12 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
     char *tab[3];
 
     tab[0] = (char *)execPwd.c_str();
-    tab[1] = filePwd.c_str();
+    tab[1] = (char *)filePwd.c_str();
     tab[2] = 0;
 
-    std::vector<std::string> my_env;
+    char **my_env;
 
-    my_env = toTab(newEnv(filePwd, envp, req));
+    my_env = vecToTab(newEnv(filePwd, envp, req));
 
     pipe(fd_in);
     pipe(fd_out);
