@@ -13,7 +13,7 @@ void deleteallfd(Server serv)
     std::cout << colors::green << "Clean All Fd" << std::endl;
 }
 
-int main(int ac, char **av)
+int main(int ac, char **av, char **envp)
 {
     Server serv;
     Conf data;
@@ -27,9 +27,7 @@ int main(int ac, char **av)
 		return (1);
 	}
     serv.servers = data.getServers();
-    //data.print_all_data(); //USED BY TIM FOR TEST
-	//serv.info.print_all_data(); // ! For test
-
+    serv.envp = envp;
     serv.initServer();
     while(1)
     {

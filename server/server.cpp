@@ -73,6 +73,10 @@ void Server::handleRequest()
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
 
+                //std::cout << "requete num = " << i << std::endl;
+                Requete requete(clients[i].request);
+                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
+                std::cout << colors::grey << clients[i].request << std::endl;
 
             if(clients[i].requestSize > MAX_REQUEST)
             {
@@ -95,14 +99,23 @@ void Server::handleRequest()
                 kill_client(clients[i]);
                 i--;
             }
+            else if (is_cgi(requete.getUrl()))
+            {
+                std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
+                std::string rescgi = execCGI(requete.getUrl(), envp, requete);
+                std::cout << rescgi << std::endl;
+                if(rescgi.empty())
+                    showError(404, clients[i]);
+                rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
+                send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
+                    
+            }
             else
             {
                 std::cout << "---------NEW Requete = " << std::endl;
                 Requete requete(clients[i].request);
-                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;//Tim
-                std::cout << colors::grey << clients[i].request << std::endl;//Tim
-
-
+                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
+                std::cout << colors::grey << clients[i].request << std::endl;
 
                 if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
                 {
@@ -126,7 +139,8 @@ void Server::handleRequest()
                     getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
                 }
                 else if (requete.getMethod() == "POST") {
-
+                    postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
+                    
                 }
                 else if (requete.getMethod() == "DELETE") {
                     deleteMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
