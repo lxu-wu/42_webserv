@@ -104,7 +104,7 @@ bool Server::is_cgi(std::string filename)
 {
     std::vector<std::string>  cgi_list;
     cgi_list.push_back(".py");
-    cgi_list.push_back(".perl");
+    cgi_list.push_back(".pl");
     std::string extension = filename.substr(filename.find('.'), filename.size());
     for(size_t i = 0; i < cgi_list.size(); i++)
     {

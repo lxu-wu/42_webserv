@@ -105,7 +105,7 @@ char **newEnv(char *filePwd, char **envp)
     return (my_env);
 }
 
-std::string execCGI(char *filePwd, char **envp, Tim_requete req)
+std::string execCGI(char *filePwd, char **envp, Requete req)
 {
     char *execPwd = searchExec(filePwd, envp);
     if (!execPwd)
@@ -175,9 +175,9 @@ std::string execCGI(char *filePwd, char **envp, Tim_requete req)
             perror("dup2");
             exit(1);
         }
-        if (req.getBody())
+        if (!req.getBody().empty())
         {
-            write(fd_in[0], req.getLeijie(), req.getLen());//req.getBody ou req.getLeijie
+            write(fd_in[0], req.getFullBody().c_str(), req.getLen());//req.getBody ou req.getLeijie
         }
         waitpid(pid, 0, 0);
         close(fd_in[0]);

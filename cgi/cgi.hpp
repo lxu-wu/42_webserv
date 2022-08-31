@@ -10,6 +10,8 @@
 #include <climits>
 #include <sys/stat.h>
 
-std::string execCGI(char *filePwd, char **envp, Tim_requete req);
+#include "../parsing/requete.hpp"
+
+std::string execCGI(char *filePwd, char **envp, Requete req);
 
 #endif
