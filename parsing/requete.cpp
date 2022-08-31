@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Requete.hpp"
+#include "requete.hpp"
 
 Requete::Requete(std::string requete)
 {

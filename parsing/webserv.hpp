@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/31 14:47:28 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/08/31 15:09:37 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,8 @@ bool my_atoi(std::string word);
 class Location
 {
 	public:
-		Location();
-		~Location();
+		Location() {;};
+		~Location() {;};
 		
 		/* Setteres */
 		void setDir(std::string word)		{_dir = word;};
@@ -119,8 +119,8 @@ class Servers
 class Conf
 {
 	public:
-		Conf() {;};
-		~Conf() {;};
+		Conf();
+		~Conf();
 
 		/* Getters */
 		std::vector<std::string> get_file() const {return (this->_file);};

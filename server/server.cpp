@@ -1,5 +1,5 @@
 #include "../server/server.hpp"
-#include "../parsing/tim_requete.hpp"
+#include "../parsing/requete.hpp"
 #include "../parsing/webserv.hpp"
 #include <stdlib.h>
 #include <dirent.h>
@@ -98,7 +98,7 @@ void Server::handleRequest()
             else
             {
                 //std::cout << "requete num = " << i << std::endl;
-                Tim_requete requete(clients[i].request);
+                Requete requete(clients[i].request);
                 std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
                 std::cout << colors::grey << clients[i].request << std::endl;
 

@@ -1,5 +1,5 @@
 #include "../server/server.hpp"
-#include "../parsing/tim_requete.hpp"
+#include "../parsing/requete.hpp"
 #include "../parsing/webserv.hpp"
 
 void Server::initServer()
