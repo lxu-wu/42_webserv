@@ -6,8 +6,8 @@ void Server::initServer()
 {
     for(size_t i = 0; i < servers.size(); i++)
     {
-        Socket *socket = new Socket;
-        socket->setup(stoi(servers[i]->getListen()));
+        Socket socket;
+        socket.setup(stoi(servers[i]->getListen()));
         sockets.push_back(socket);
     }
 	errors.insert(std::make_pair(200, "200 OK"));
@@ -49,6 +49,7 @@ void Server::showError(int err, Client &client)
         }
     }
 }
+
 
 bool Server::kill_client(Client client)
 {
@@ -94,10 +95,16 @@ bool Server::is_allowed(std::vector<std::string> methodlist, std::string methodr
 
 std::string Server::getRootPatch(std::string url, int i)
 {
+    std::string urlroot = servers[i]->getRoot();
     // std::string root = info.getServers()[i]->getRoot();
-    std::string ret = servers[i]->getRoot() + url;
-    std::cout <<colors::green <<  ret << colors::grey<< std::endl;
-    return ret;
+    // if(!strncmp("./", servers[i]->getRoot().c_str(), 2))
+    //     urlroot += servers[i]->getRoot().substr(1, servers[i]->getRoot().size());
+    // else
+    //     urlroot += servers[i]->getRoot();
+
+    std::cout << colors::green << urlroot + url << std::endl;
+
+    return urlroot + url;
 }
 
 bool Server::is_cgi(std::string filename)

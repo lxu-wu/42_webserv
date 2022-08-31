@@ -168,8 +168,7 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
             perror("dup2");
             exit(1);
         }
-        // free(my_env);
-        // free(tab[0]);
+        free(my_env);
 
 
         char buff[32768] = {0};

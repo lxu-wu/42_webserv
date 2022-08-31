@@ -18,9 +18,9 @@ void Server::waitClient()
     FD_ZERO(&writeSet);
     for(size_t i = 0; i < sockets.size(); i++) // Set fd of server
     {
-        FD_SET(sockets[i]->getServerSocket(), &readSet);
-        if(sockets[i]->getServerSocket() > max_fd)
-            max_fd = sockets[i]->getServerSocket();
+        FD_SET(sockets[i].getServerSocket(), &readSet);
+        if(sockets[i].getServerSocket() > max_fd)
+            max_fd = sockets[i].getServerSocket();
     }
     for(size_t i = 0; i < clients.size(); i++) // Set fd of server
     {
@@ -42,15 +42,15 @@ void Server::acceptClient()
 
     for(size_t i = 0; i < sockets.size(); i++)
     {
-        if(FD_ISSET(sockets[i]->getServerSocket(), &_read))
+        if(FD_ISSET(sockets[i].getServerSocket(), &_read))
         {
             Client tmp;
             tmp.setNServer(i);
             bzero(tmp.request, 2048);
             tmp.requestSize = 0;
-            tmp.setSocketClient(accept(sockets[i]->getServerSocket(), (sockaddr *)&addrclient, &clientSize));
+            tmp.setSocketClient(accept(sockets[i].getServerSocket(), (sockaddr *)&addrclient, &clientSize));
             clients.push_back(tmp);
-            if(sockets[i]->getServerSocket() < 0)
+            if(sockets[i].getServerSocket() < 0)
             {
                 perror("Connect");
                 exit(-1);
@@ -73,10 +73,11 @@ void Server::handleRequest()
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
 
-                //std::cout << "requete num = " << i << std::endl;
-                Requete requete(clients[i].request);
-                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
-                std::cout << colors::grey << clients[i].request << std::endl;
+            Requete requete(clients[i].request);
+            if (!requete.check_tim())
+                throw RequestErr();
+            std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
+            std::cout << colors::grey << clients[i].request << std::endl;
 
             if(clients[i].requestSize > MAX_REQUEST)
             {
@@ -112,14 +113,14 @@ void Server::handleRequest()
             }
             else
             {
-                if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
-                {
-                    // std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
-                    showError(413, clients[i]);
-                    kill_client(clients[i]);
-                    i--;
-                    continue;
-                }
+                // if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
+                // {
+                //     // std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
+                //     showError(413, clients[i]);
+                //     kill_client(clients[i]);
+                //     i--;
+                //     continue;
+                // }
                 if(!is_allowed(servers[clients[i].getNServer()]->getMethod(), requete.getMethod()))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
@@ -128,8 +129,6 @@ void Server::handleRequest()
                     i--;
                     continue;
                 }
-                if (!requete.check_tim())
-                    throw RequestErr();
                 if (requete.getMethod() == "GET") {
                     getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
                 }
