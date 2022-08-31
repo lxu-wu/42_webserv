@@ -102,10 +102,12 @@ void Server::handleRequest()
             else if (is_cgi(requete.getUrl()))
             {
                 std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
-                std::string rescgi = execCGI((char *)(requete.getUrl().c_str()), envp, requete);
+                std::string rescgi = execCGI(requete.getUrl(), envp, requete);
                 std::cout << rescgi << std::endl;
                 if(rescgi.empty())
                     showError(404, clients[i]);
+                rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
+                send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
                     
             }
             else

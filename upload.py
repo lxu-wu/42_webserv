@@ -16,29 +16,38 @@
 # print '</body>'
 # print '</html>'
 
-import cgi, os
+# import cgi, os
 
-form = cgi.FieldStorage()
+# form = cgi.FieldStorage()
 
-fileitem = form['file1']
+# fileitem = form['file1']
 
-path = "./dossier"
+# path = "./dossier"
 
-isExist = os.path.exists(path)
+# isExist = os.path.exists(path)
 
-if not isExist:
-	os.makedirs(path)
+# if not isExist:
+# 	os.makedirs(path)
 
-if fileitem.filename:
-	fn = os.path.basename(fileitem.filename)
-	open(path + fn, 'wb').write(fileitem.file.read())
-	message = "The file '" + fn + "' was uploaded successfully with python"
+# if fileitem.filename:
+# 	fn = os.path.basename(fileitem.filename)
+# 	open(path + fn, 'wb').write(fileitem.file.read())
+# 	message = "The file '" + fn + "' was uploaded successfully with python"
 
-else:
-	message = "No file was uploaded"
+# else:
+# 	message = "No file was uploaded"
 
-print """\
-<html><body>
-<p>%s</p>
-</body></html>
-""" % (message, )
+# print """\
+# <html><body>
+# <p>%s</p>
+# </body></html>
+# """ % (message,)
+
+print ("<html>")
+print ("<head>")
+print ("<title>CGI xana</title>")
+print ("</head>")
+print ("<body>")
+print ("<h2>Hello</h2>")
+print ("</body>")
+print ("</html>")
