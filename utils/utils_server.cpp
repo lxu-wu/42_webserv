@@ -99,3 +99,17 @@ std::string Server::getRootPatch(std::string url, int i)
     std::cout <<colors::green <<  ret << colors::grey<< std::endl;
     return ret;
 }
+
+bool Server::is_cgi(std::string filename)
+{
+    std::vector<std::string>  cgi_list;
+    cgi_list.push_back(".py");
+    cgi_list.push_back(".perl");
+    std::string extension = filename.substr(filename.find('.'), filename.size());
+    for(size_t i = 0; i < cgi_list.size(); i++)
+    {
+        if(cgi_list[i] == extension)
+            return true;
+    }
+    return false;
+}

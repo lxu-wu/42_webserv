@@ -22,6 +22,7 @@
 #include "../parsing/tim_requete.hpp"
 #include "../utils/colors.hpp"
 #include "../client/client.hpp"
+#include "../cgi/cgi.hpp"
 #include "socket.hpp"
 
 #define MAX_REQUEST 2048
@@ -38,6 +39,8 @@ class Server
         bool kill_client(Client client);
         bool is_allowed(std::vector<std::string> methodlist, std::string methodreq); // say if a method is allowed
         void rep_listing(int socket, std::string path);
+        bool is_cgi(std::string filename);
+
 
         std::string getRootPatch(std::string url, int i);
         void getMethod(Client &client, std::string url);
@@ -49,6 +52,8 @@ class Server
 
 
         std::vector<Servers*> servers;
+
+        char **envp;
 
     private :
         std::vector<Socket *> sockets;

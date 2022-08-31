@@ -35,7 +35,7 @@ Tim_requete::Tim_requete(std::string requete)
 		}
 		else if (!_boundary.empty() && token.find(_boundary) != std::string::npos) //begin of body
 		{
-			make_body(ss, token);
+			//make_body(ss, token);
 			break;
 		}
 		else if (token.back() == ':')

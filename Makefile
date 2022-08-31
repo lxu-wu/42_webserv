@@ -4,7 +4,7 @@ SRCS_PATH		= ./srcs
 INCS_PATH		= ./includes
 
 SRCS =	main.cpp client/client.cpp parsing/parse_conf.cpp parsing/Classes.cpp parsing/tim_requete.cpp \
-		server/server.cpp server/socket.cpp utils/utils_server.cpp
+		server/server.cpp server/socket.cpp utils/utils_server.cpp cgi/cgi.cpp
 
 OBJS			= $(SRCS:.cpp=.o)
 

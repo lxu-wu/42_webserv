@@ -73,7 +73,10 @@ void Server::handleRequest()
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
 
-
+            Tim_requete requete(clients[i].request);
+            std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
+            std::cout << colors::grey << clients[i].request << std::endl;
+            
             if(clients[i].requestSize > MAX_REQUEST)
             {
                 std::cout << colors::on_bright_red << "out of range" << std::endl;
@@ -95,15 +98,13 @@ void Server::handleRequest()
                 kill_client(clients[i]);
                 i--;
             }
+            else if (is_cgi(requete.getUrl()))
+            {
+                std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
+                std::string rescgi = execCGI((char *)(requete.getUrl().c_str()), envp, requete);
+            }
             else
             {
-                //std::cout << "requete num = " << i << std::endl;
-                Tim_requete requete(clients[i].request);
-                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
-                std::cout << colors::grey << clients[i].request << std::endl;
-
-
-
                 if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
                 {
                     // std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
@@ -126,7 +127,8 @@ void Server::handleRequest()
                     getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
                 }
                 else if (requete.getMethod() == "POST") {
-
+                    postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
+                    
                 }
                 else if (requete.getMethod() == "DELETE") {
                     deleteMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
@@ -147,7 +149,7 @@ void Server::showPage(Client client, std::string dir)
     FILE *fd = fopen(dir.c_str(), "rb");
     if(fd == NULL)
     {
-        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << std::endl;
+        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << colors::on_grey << std::endl;
         return ;
     }
     fseek (fd , 0 , SEEK_END);
