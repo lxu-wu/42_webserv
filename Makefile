@@ -3,7 +3,7 @@ NAME = webserv
 SRCS_PATH		= ./srcs
 INCS_PATH		= ./includes
 
-SRCS =	main.cpp client/client.cpp parsing/parse_conf.cpp parsing/Classes.cpp parsing/tim_requete.cpp \
+SRCS =	main.cpp client/client.cpp parsing/parse_conf.cpp parsing/requete.cpp parsing/servers.cpp parsing/conf.cpp\
 		server/server.cpp server/socket.cpp utils/utils_server.cpp
 
 OBJS			= $(SRCS:.cpp=.o)
