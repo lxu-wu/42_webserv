@@ -86,7 +86,7 @@ char **vecToTab(std::vector<std::string> vec)
 
 std::string execCGI(std::string filePwd, char **envp, Requete req)
 {
-    filePwd = "./upload.py";
+    filePwd = "." + filePwd;
     std::string execPwd = searchExec(filePwd, envp);
     if (execPwd == "")
     {
@@ -156,10 +156,11 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
             perror("dup2");
             exit(1);
         }
-        if (!req.getBody().empty())
-        {
-            write(fd_in[0], req.getBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
-        }
+        // if (!req.getBody().empty())
+        // {
+        //     write(fd_in[0], req.getBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
+        // }
+        write(fd_in[1], "bon", 3);
         waitpid(pid, 0, 0);
         close(fd_in[0]);
         close(fd_in[1]);
@@ -200,6 +201,7 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
             ret += std::string(buff);
         }
         close(fd_out[0]);
+        std::cout << ret << "\n" ;
         return ret;
     }
     return "";
