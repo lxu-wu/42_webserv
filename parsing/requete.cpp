@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   tim_requete.cpp                                    :+:      :+:    :+:   */
+/*   Requete.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,11 +10,11 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "tim_requete.hpp"
+#include "requete.hpp"
 
-Tim_requete::Tim_requete(std::string requete)
+Requete::Requete(std::string requete)
 {
-	_leijie = requete;
+	_full_body = requete;
 	std::stringstream ss;
 	std::string token, line, key;
     ss << requete;
@@ -43,7 +43,7 @@ Tim_requete::Tim_requete(std::string requete)
 			if (!key.empty() && key != token)
 			{
 				line.pop_back();
-				_request.insert(std::pair<std::string, std::string>(key, line));
+				_header.insert(std::pair<std::string, std::string>(key, line));
 			}
 			token.pop_back();
 			key = token;
@@ -59,7 +59,7 @@ Tim_requete::Tim_requete(std::string requete)
 	if (!line.empty())
 	{
 		line.pop_back();
-		_request.insert(std::pair<std::string, std::string>(key, line));
+		_header.insert(std::pair<std::string, std::string>(key, line));
 	}
 	// std::map<std::string, std::string>::iterator it = _request.begin();
 	// std::map<std::string, std::string>::iterator it_end = _request.end();
@@ -70,7 +70,7 @@ Tim_requete::Tim_requete(std::string requete)
 	// }
 }
 
-bool Tim_requete::check_tim()
+bool Requete::check_tim()
 {
 	if (_method != "POST" && _method != "GET" && _method != "DELETE")
 		return false;
@@ -80,7 +80,7 @@ bool Tim_requete::check_tim()
 }
 
 /* check if content start */
-void Tim_requete::make_body(std::stringstream& ss, std::string token)
+void Requete::make_body(std::stringstream& ss, std::string token)
 {
 	std::string body;
 	while (!token.empty())

@@ -1,5 +1,5 @@
 #include "../server/server.hpp"
-#include "../parsing/tim_requete.hpp"
+#include "../parsing/requete.hpp"
 #include "../parsing/webserv.hpp"
 #include <stdlib.h>
 #include <dirent.h>
@@ -105,6 +105,16 @@ void Server::handleRequest()
             }
             else
             {
+<<<<<<< HEAD
+=======
+                //std::cout << "requete num = " << i << std::endl;
+                Requete requete(clients[i].request);
+                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
+                std::cout << colors::grey << clients[i].request << std::endl;
+
+
+
+>>>>>>> b6439ca08cd685e73bb6068896ed9fed30b4e4e2
                 if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
                 {
                     // std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;

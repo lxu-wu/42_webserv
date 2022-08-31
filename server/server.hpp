@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 #include "../parsing/webserv.hpp"
-#include "../parsing/tim_requete.hpp"
+#include "../parsing/requete.hpp"
 #include "../utils/colors.hpp"
 #include "../client/client.hpp"
 #include "../cgi/cgi.hpp"
