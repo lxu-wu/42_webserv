@@ -68,13 +68,7 @@ int main(int ac, char **av)
 		std::cerr << e.what() << std::endl;
 		return (1);
 	}
-<<<<<<< HEAD:john/main.cpp
     serv.servers = data.getServers();
-=======
-    //data.print_all_data(); //USED BY TIM FOR TEST
-    serv.info = data;
-	//serv.info.print_all_data(); // ! For test
->>>>>>> 73f5c2fc8366236f56f9da5e390bf99df5bc95d2:main.cpp
 
     serv.initServer();
     while(1)
