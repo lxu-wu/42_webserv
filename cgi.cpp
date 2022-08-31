@@ -1,19 +1,6 @@
 #include "cgi.hpp"
 
-char *searchPath(char **envp)
-{
-    int i = 0;
-
-    while (envp[i])
-    {
-        if (!strncmp("PATH=", envp[i], 5))
-            return (envp[i] + 5);
-        i++;
-    }
-    return (0);
-}
-
-std::string fileExtent(char *filePwd)
+std::string fileExtent(std::string filePwd)
 {
     size_t  i = 0;
 
@@ -25,90 +12,63 @@ std::string fileExtent(char *filePwd)
         return "/usr/bin/python2.7";
     if (!strcmp(&filePwd[i], ".pl"))
         return "/usr/bin/perl";
-    return "\0";
+    return "";
 }
 
-char    *searchExec(char *filePwd, char **envp)
+std::string searchExec(std::string filePwd, char **envp)
 {
-    char *envPath = searchPath(envp);
-
-    printf("1\n");
-    if (!envPath)
-        return (0);
-
     std::string path;
     std::string token;
     std::string const exec = fileExtent(filePwd);
 
-    if (exec == "\0")
+    if (exec == "")
     {
         std::cerr << "uncompatible CGI-script" << std::endl;
         return (0);
     }
 
-    char *tmp = strdup(envPath);
-    char *ret;
-
-    token = std::string(strtok(tmp, ":"));
-    ret = 0;
-    while (token.c_str())
-    {
-        std::cout << token << std::endl;
-        path = token + exec;
-        std::cout << path << std::endl;
-        if (!access(path.c_str(), X_OK))
-        {
-            ret = strdup(path.c_str());
-            if (!ret)
-            {
-                perror("strdup searchExec:1");
-                exit(1);
-            }
-            free(tmp);
-            return (ret);
-        }
-        token = std::string(strtok(0, ":"));
-    }
-    printf("3\n");
-    free(tmp);
+    if (!access(exec.c_str(), X_OK))
+        return exec;
     return (0);
 }
 
-char **newEnv(char *filePwd, char **envp)
+std::vector<std::string> newEnv(std::string filePwd, char **envp, Requete req)
 {
-    char **my_env;
+    std::vector<std::string> my_env;
 
     size_t  i = 0;
 
     while (envp[i])
         i++;
-    
-    my_env = (char **)malloc(sizeof(char *) * (i + 19 + 1));
-    if (!my_env)
-    {
-        perror("malloc newEnv");
-        exit(1);
-    }
 
     i = 0;
     while (envp[i])
     {
-        my_env[i] = envp[i];
+        my_env.push_back(envp[i]);
         i++;
     }
-    my_env[i++] = (char*)("AUTH_TYPE=bonjour");
-    // my_env[i++] = "CONTENT_TYPE=text/html";
-    // my_env[i++] = "GATEWAY_INTERFACE=CGI/1.1";
-    // my_env[i++] = (char *)(std::string("PATH_INFO=") + std::string(filePwd)).c_str();
-    my_env[i] = 0;
+    my_env.push_back("CONTENT_TYPE=" + req.getType());
+    my_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    my_env.push_back("PATH_TRANSLATED=" + req.getPath());
+    my_env.push_back("QUERY_STRING=" + req.getQS);//getQS pour querry string
+    my_env.push_back("REMOTE_ADDR=127.0.0.1");
+    my_env.push_back("REQUEST_METHOD=" + req.getMethod());
+    my_env.push_back("CONTENT_LENGTH=" + req.getLen());
+    my_env.push_back("SERVER_SOFTWARE=" + req.getProtocol());
+    my_env.push_back("SERVER_NAME=127.0.0.1");
+    my_env.push_back("HTTP_ACCEPT=" + req.GetHeader()["Accept:"]);
+    my_env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.GetHeader()["Accept-Language:"]);
+    my_env.push_back("HTTP_USER_AGENT=" + req.GetHeader()["User-Agent:"]);
+    my_env.push_back("SCRIPT_NAME=" + filePwd);
     return (my_env);
 }
 
-std::string execCGI(char *filePwd, char **envp, Tim_requete req)
+std::string execCGI(std::string filePwd, char **envp, Requete req)
 {
-    char *execPwd = searchExec(filePwd, envp);
-    if (!execPwd)
+    std::string execPwd = searchExec(filePwd, envp);
+    if (execPwd == "")
     {
+        std::cerr << "Bad file" << std::endl;
         return (0);
     }
 
@@ -117,13 +77,13 @@ std::string execCGI(char *filePwd, char **envp, Tim_requete req)
     int fd_out[2];
     char *tab[3];
 
-    tab[0] = execPwd;
-    tab[1] = filePwd;
+    tab[0] = (char *)execPwd.c_str();
+    tab[1] = filePwd.c_str();
     tab[2] = 0;
 
-    char **my_env;
+    std::vector<std::string> my_env;
 
-    my_env = newEnv(filePwd, envp);
+    my_env = toTab(newEnv(filePwd, envp, req));
 
     pipe(fd_in);
     pipe(fd_out);
@@ -176,7 +136,7 @@ std::string execCGI(char *filePwd, char **envp, Tim_requete req)
         }
         if (req.getBody())
         {
-            write(fd_in[0], req.getLeijie(), req.getLen());//req.getBody ou req.getLeijie
+            write(fd_in[0], req.getBodyComplet(), req.getLen());//req.getBody ou req.getBodyComplet
         }
         waitpid(pid, 0, 0);
         close(fd_in[0]);

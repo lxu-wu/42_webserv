@@ -6,6 +6,8 @@ this->env["PATH_TRANSLATED"] = this->get_target_file_fullpath(request, loc);
 this->env["QUERY_STRING"] = request.get_query();
 this->env["REMOTE_HOST"] = request.headers["Host"];
 this->env["REMOTE_ADDR"] = get_ip(request.get_client_fd());
+this->env["REQUEST_METHOD"] = request.method;
+
 this->env["REMOTE_USER"] = "";
 this->env["REMOTE_IDENT"] = "";
 this->env["REQUEST_METHOD"] = request.method;
@@ -17,3 +19,43 @@ this->env["SERVER_PROTOCOL"] = "HTTP/1.1";
 this->env["SERVER_PORT"] = request.get_port();
 this->env["SERVER_SOFTWARE"] = "webserv/1.0";
 this->env["CONTENT_LENGTH"] = "-1";
+
+
+class Requete
+{
+	public:
+		Requete(std::string requete);
+		~Requete() {};
+
+		/* Getters */
+		std::string							getMethod() const	{return _method;};
+		std::string							getUrl() const		{return _url;};
+		std::string							getProtocol() const	{return _protocol;};
+		std::string							getBoundary() const	{return _boundary;};
+		std::string							getName() const		{return _boundary;};
+		std::string							getFileName() const	{return _file_name;};
+		std::string							getType() const		{return _type;};
+		std::string							getBody() const		{return _body;};
+		size_t								getLen() const		{return _len;};
+		std::string							getFullBody() const	{return _full_body;};
+		std::map<std::string, std::string>	getHeader() const	{return _header;};
+		std::map<std::string, std::string>	getText() const		{return _text;};
+
+		/* Functions */
+		bool check_tim();
+		void make_body(std::stringstream& ss, std::string token);
+		
+	protected:
+		std::string							_method;
+		std::string							_url;
+		std::string							_protocol;
+		std::string							_boundary;
+		std::string							_name;//content name
+		std::string							_file_name;
+		std::string							_type;//content type
+		std::string							_body;//content body without boundary
+		size_t								_len;
+		std::string							_full_body;//for LXU WU
+		std::map<std::string, std::string>	_header;//
+		std::map<std::string, std::string>	_text;//if more than 1 request + no content type first arg = name && second = body
+};
