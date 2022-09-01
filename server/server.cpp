@@ -72,7 +72,6 @@ void Server::handleRequest()
             int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize,
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
-
             Requete requete(clients[i].request);
             if (!requete.check_tim())
                 throw RequestErr();
@@ -156,7 +155,7 @@ void Server::showPage(Client client, std::string dir)
     FILE *fd = fopen(dir.c_str(), "rb");
     if(fd == NULL)
     {
-        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << std::endl;//Tim
+        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << colors::on_grey << std::endl;
         return ;
     }
     fseek (fd , 0 , SEEK_END);
@@ -244,18 +243,19 @@ void Server::postMethod(Client &client, std::string url)
     }
     else
     {
-        int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
-        if(fd < 0)
-        {
-            showError(500, client);
-            return ;
-        }
-        // ADD to queue
-        int r = write(fd, client.request, 2049);
-        if(r < 0)
-            showError(500, client);
-        close(fd);
+        // int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
+        // if(fd < 0)
+        // {
+        //     showError(500, client);
+        //     return ;
+        // }
+        // // ADD to queue
+        // int r = write(fd, client.request, 2049);
+        // if(r < 0)
+        //     showError(500, client);
+        // close(fd);
     }
+    
 }
 
 
