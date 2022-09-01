@@ -73,10 +73,10 @@ void Server::handleRequest()
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
 
-                //std::cout << "requete num = " << i << std::endl;
-                Requete requete(clients[i].request);
-                std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
-                std::cout << colors::grey << clients[i].request << std::endl;
+            std::cout << "----REQUETE num = " << i << std::endl;
+            Requete requete(clients[i].request);
+            std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
+            std::cout << colors::grey << clients[i].request << std::endl;
 
             if(clients[i].requestSize > MAX_REQUEST)
             {
