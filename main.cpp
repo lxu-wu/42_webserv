@@ -1,10 +1,13 @@
 #include "server/server.hpp"
 
+Server serv;
+
+
 void deleteallfd(Server serv)
 {
     for(size_t i = 0; i < serv.getSocketList().size(); i++)
     {
-        close(serv.getSocketList()[i]->getServerSocket());
+        close(serv.getSocketList()[i].getServerSocket());
     }
     for(size_t i = 0; i < serv.getClientsList().size(); i++)
     {
@@ -13,9 +16,15 @@ void deleteallfd(Server serv)
     std::cout << colors::green << "Clean All Fd" << std::endl;
 }
 
+void sig_handler(int signal)
+{
+    (void)signal;
+    deleteallfd(serv);
+    exit(0);
+}
+
 int main(int ac, char **av, char **envp)
 {
-    Server serv;
     Conf data;
 	try
 	{
@@ -29,6 +38,7 @@ int main(int ac, char **av, char **envp)
     serv.servers = data.getServers();
     serv.envp = envp;
     serv.initServer();
+    signal(SIGINT, sig_handler);
     while(1)
     {
         serv.waitClient();
@@ -36,6 +46,5 @@ int main(int ac, char **av, char **envp)
         serv.handleRequest();
     }
     
-    deleteallfd(serv);
 
 }

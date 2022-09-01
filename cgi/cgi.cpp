@@ -33,7 +33,7 @@ std::string searchExec(std::string filePwd, char **envp)
     return (0);
 }
 
-std::vector<std::string> newEnv(std::string filePwd, char **envp, Requete req)
+std::vector<std::string> newEnv(std::string filePwd, char **envp, Requete &req)
 {
     std::vector<std::string> my_env;
 
@@ -84,9 +84,9 @@ char **vecToTab(std::vector<std::string> vec)
     return tab;
 }
 
-std::string execCGI(std::string filePwd, char **envp, Requete req)
+std::string execCGI(std::string filePwd, char **envp, Requete &req)
 {
-    filePwd = "." + filePwd;
+    filePwd = "./upload.py"; // a enlever quand john m envoie tout le path
     std::string execPwd = searchExec(filePwd, envp);
     if (execPwd == "")
     {
@@ -121,6 +121,8 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
 
     if (pid == 0)
     {
+        close(fd_in[1]);
+        close(fd_out[0]);
         if (dup2(fd_in[0], 0) == -1)
         {
             perror("dup2");
@@ -131,12 +133,9 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
             perror("dup2");
             exit(1);
         }
-        close(fd_out[0]);
-        close(fd_in[1]);
+        sleep(1);
         execve(tab[0], tab, my_env);
         perror("execve");
-        close(fd_out[1]);
-        close(fd_in[0]);
         exit(1);
     }
 
@@ -156,24 +155,23 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
             perror("dup2");
             exit(1);
         }
-        // if (!req.getBody().empty())
-        // {
-        //     write(fd_in[0], req.getBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
-        // }
-        write(fd_in[1], "bon", 3);
-        waitpid(pid, 0, 0);
+        if (!req.getBody().empty())
+        {
+            write(fd_in[1], req.getBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
+        }
         close(fd_in[0]);
         close(fd_in[1]);
+        waitpid(pid, 0, 0);
         if (dup2(fdIn, 0) == -1)
         {
             perror("dup2");
             exit(1);
         }
-        // free(my_env);
-        // free(tab[0]);
+
+        free(my_env);
 
 
-        char buff[32768] = {0};
+        char buff[51] = {0};
         std::string ret = "";
         int  i;
 
@@ -181,7 +179,7 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
 
 
         close(fd_out[1]);
-        i = read(fd_out[0], buff, 32767);
+        i = read(fd_out[0], buff, 50);
         if (i == -1)
         {
             perror("read");
@@ -190,7 +188,7 @@ std::string execCGI(std::string filePwd, char **envp, Requete req)
         ret += std::string(buff);
         while (i < 0)
         {
-            i = read(fd_out[0], buff, 32767);
+            i = read(fd_out[0], buff, 50);
             if (i == -1)
             {
                 perror("read");

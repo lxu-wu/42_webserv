@@ -47,7 +47,7 @@ class Server
         void deleteMethod(Client &client, std::string url);
         void postMethod(Client &client, std::string url);
 
-        std::vector<Socket *> getSocketList() {return sockets; }
+        std::vector<Socket> getSocketList() {return sockets; }
         std::vector<Client> getClientsList() {return clients; }
 
 
@@ -55,15 +55,15 @@ class Server
 
         char **envp;
 
+        fd_set _read;
+        fd_set _write;
+
     private :
-        std::vector<Socket *> sockets;
+        std::vector<Socket> sockets;
         std::vector<Client> clients;
         std::map<int , std::string> errors;
 
 
-
-        fd_set _read;
-        fd_set _write;
 };
 
 std::string find_type(std::string dir);
