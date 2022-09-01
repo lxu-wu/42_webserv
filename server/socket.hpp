@@ -31,7 +31,7 @@ class Socket
         // void setSocketClient(int sock) { clientSocket = sock; }
 
 
-
+        timeval time_start;
 
     private :
         int serverSocket;

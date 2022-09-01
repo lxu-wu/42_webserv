@@ -45,6 +45,7 @@ void Server::acceptClient()
         if(FD_ISSET(sockets[i].getServerSocket(), &_read))
         {
             Client tmp;
+            tmp.last_time = 0;
             tmp.setNServer(i);
             bzero(tmp.request, 2048);
             tmp.requestSize = 0;
@@ -72,17 +73,23 @@ void Server::handleRequest()
             int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize,
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
+
+
+
+
+
+
+
             Requete requete(clients[i].request);
-            if (!requete.check_tim())
-                throw RequestErr();
+            // if (!requete.check_tim())
+            //     throw RequestErr();
             std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
             std::cout << colors::grey << clients[i].request << std::endl;
 
             if(clients[i].requestSize > MAX_REQUEST)
             {
-                std::cout << colors::on_bright_red << "out of range" << std::endl;
                 showError(413, clients[i]);
-                if(kill_client(clients[i]))
+                if(kill_client(clients[i], requete))
                     i--;
                 continue;
             }
@@ -90,57 +97,56 @@ void Server::handleRequest()
             {
                 std::cout << "Recv failed !" << std::endl;
                 showError(500, clients[i]);
-                kill_client(clients[i]);
+                kill_client(clients[i], requete);
                 i--;
             }
             else if(Reqsize == 0)
             {
                 std::cout << colors::on_bright_red << "Connection is closed !" << std::endl;
-                kill_client(clients[i]);
+                kill_client(clients[i], requete);
                 i--;
             }
-            else if (is_cgi(requete.getUrl()))
-            {
-                std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
-                std::string rescgi = execCGI(requete.getUrl(), envp, requete);
-                std::cout << rescgi << std::endl;
-                if(rescgi.empty())
-                    showError(404, clients[i]);
-                rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
-                send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
-                    
-            }
+
             else
             {
-
-                if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
+                if(requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
                     showError(413, clients[i]);
-                    kill_client(clients[i]);
-                    i--;
+                    if(kill_client(clients[i], requete))
+                        i--;
                     continue;
                 }
                 if(!is_allowed(servers[clients[i].getNServer()]->getMethod(), requete.getMethod()))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
                     showError(405, clients[i]);
-                    kill_client(clients[i]);
-                    i--;
+                    if(kill_client(clients[i], requete))
+                        i--;
                     continue;
                 }
-                if (requete.getMethod() == "GET") {
+
+                if (is_cgi(requete.getUrl()))
+                {
+                    std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
+                    std::string rescgi = execCGI(requete.getUrl(), envp, requete);
+                    if(rescgi.empty())
+                        showError(404, clients[i]);
+
+                    std::cout << rescgi << std::endl;
+                    rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
+                    send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
+                }
+                // else if (clients[i].is_timeout())
+                //     showError(408, clients[i]);
+                else if (requete.getMethod() == "GET")
                     getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
-                }
-                else if (requete.getMethod() == "POST") {
-                    postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
-                    
-                }
-                else if (requete.getMethod() == "DELETE") {
+                else if (requete.getMethod() == "POST")
+                    postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()), requete);
+                else if (requete.getMethod() == "DELETE")
                     deleteMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
-                }
             }
-            if(kill_client(clients[i]))
+            if(kill_client(clients[i], requete))
                 i--;
             clients[i].requestSize = 0;
             bzero(clients[i].request, 2048);
@@ -150,37 +156,6 @@ void Server::handleRequest()
 }
 
 
-void Server::showPage(Client client, std::string dir)
-{
-    FILE *fd = fopen(dir.c_str(), "rb");
-    if(fd == NULL)
-    {
-        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << colors::on_grey << std::endl;
-        return ;
-    }
-    fseek (fd , 0 , SEEK_END);
-    int lSize = ftell (fd);
-    rewind (fd);
-
-    std::string type = find_type(dir);
-
-    char file[lSize];
-    size_t len = fread(file, 1, lSize, fd);
-    fclose(fd);
-    std::string data(file, len);
-    std::string hello = std::string("HTTP/1.1 200 OK\n") + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n" + data;
-    int ret = send(client.getClientSocket() , hello.c_str(), hello.size(), 0);
-    if(ret < 0)
-    {
-        showError(500, client);
-        return ;
-    }
-    else if(ret == 0)
-    {
-        showError(400, client);
-        return ;
-    }
-}
 
 void Server::getMethod(Client &client, std::string url)
 {
@@ -201,13 +176,13 @@ void Server::getMethod(Client &client, std::string url)
         {
             std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
             if(strcmp(url.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
-                showPage(client, servers[client.getNServer()]->getIndex());
+                showPage(client, servers[client.getNServer()]->getIndex(), 200);
             else
                 rep_listing(client.getClientSocket(), url);
         }
         else
         {
-            showPage(client, url);
+            showPage(client, url, 200);
         }
         fclose(fd);
     }
@@ -216,6 +191,9 @@ void Server::getMethod(Client &client, std::string url)
 void Server::deleteMethod(Client &client, std::string url)
 {
     std::cout << colors::bright_yellow << "DELETE Method !" << std::endl;
+    url = getRootPatch(url, client.getNServer());
+
+
     FILE *fd = fopen(url.c_str(), "r");
     if(!fd)
     {
@@ -234,8 +212,10 @@ void Server::deleteMethod(Client &client, std::string url)
     std::cout << colors::green << url << " as been delete !" << std::endl;
 }
 
-void Server::postMethod(Client &client, std::string url)
+void Server::postMethod(Client client, std::string url, Requete req)
 {
+    url = getRootPatch(url, client.getNServer());
+
 	struct stat buf;
 	lstat(url.c_str(), &buf);
     if(S_ISDIR(buf.st_mode)) {
@@ -250,12 +230,18 @@ void Server::postMethod(Client &client, std::string url)
         //     return ;
         // }
         // // ADD to queue
-        // int r = write(fd, client.request, 2049);
+        // int r = write(fd, req.getBody().c_str(), req.getLen());
         // if(r < 0)
+        // {
         //     showError(500, client);
+        //     return ;
+        // }
         // close(fd);
     }
-    
+    if(req.getLen() == 0)
+        showPage(client, NULL, 201);
+    else
+        showPage(client, NULL, 204);
 }
 
 

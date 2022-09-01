@@ -32,29 +32,33 @@ void Server::initServer()
 
 void Server::showError(int err, Client &client)
 {
-    std::map<std::string , std::string> err_map = servers[client.getNServer()]->getError();
-    std::map<std::string , std::string>::iterator it2 = err_map.find(std::to_string(err));
-    if(it2 != servers[client.getNServer()]->getError().end())
-    {
-        showPage(client, it2->second);
-    }
-    else
-    {
+    // std::map<std::string , std::string> err_map = servers[client.getNServer()]->getError();
+    // std::map<std::string , std::string>::iterator it2 = err_map.find(std::to_string(err));
+    // if(it2 != servers[client.getNServer()]->getError().end())
+    //     showPage(client, it2->second, 200);
+    // else
+    // {
         std::map<int , std::string>::iterator it = errors.find(err);
         if(it != errors.end())
         {
             std::cout << colors::on_bright_red << "Show error : " << it->first << " : " << it->second << " !" << colors::on_grey << std::endl;
             std::string msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
-            send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+            int sendret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+            if(sendret < 0)
+                std::cout << "Client disconnected" << std::endl;
+            else if (sendret == 0)
+                std::cout << "0 byte passed to server" << std::endl;
         }
-    }
+        
+    // }
 }
 
 
-bool Server::kill_client(Client client)
+bool Server::kill_client(Client client, Requete req)
 {
+    if(req.getHeader().find("keep-alive") != req.getHeader().end())
+        return false;
     close(client.getClientSocket());
-
     for(size_t i = 0; i < clients.size(); i++)
     {
         if(clients[i].getClientSocket() == client.getClientSocket())
@@ -121,4 +125,38 @@ bool Server::is_cgi(std::string filename)
             return true;
     }
     return false;
+}
+
+
+void Server::showPage(Client client, std::string dir, int code)
+{
+    std::string msg;
+
+    if(dir.empty())
+        msg = "HTTP/1.1 " + errors.find(code)->second + "\n\n";
+    else
+    {
+        FILE *fd = fopen(dir.c_str(), "rb");
+        if(fd == NULL)
+        {
+            std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << colors::on_grey << std::endl;
+            return ;
+        }
+        fseek (fd , 0 , SEEK_END);
+        int lSize = ftell (fd);
+        rewind (fd);
+
+        std::string type = find_type(dir);
+
+        char file[lSize];
+        size_t len = fread(file, 1, lSize, fd);
+        fclose(fd);
+        std::string data(file, len);
+        msg = "HTTP/1.1 " + errors.find(code)->second + "\n" + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n" + data;
+    }
+    int ret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+    if(ret < 0)
+        showError(500, client);
+    else if(ret == 0)
+        showError(400, client);
 }

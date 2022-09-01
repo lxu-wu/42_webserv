@@ -14,7 +14,7 @@
 
 Requete::Requete(std::string requete)
 {
-	//std::cout << "Before check " << std::endl;
+	std::cout << "Before check " << std::endl;
 	std::stringstream ss;
 	_request = requete;
 	_len = 0;
@@ -30,12 +30,13 @@ Requete::Requete(std::string requete)
 	else if (_method == "POST")
 	{
 		make_POST(ss);
+		
 		//std::cout << "Body      = " << this->_body << std::endl;
 		//std::cout << "Full Body = " << this->_full_body << std::endl;
 		//std::cout << "Request   = " << this->_request << std::endl;
 
 	}
-	//std::cout << "After check " << std::endl;
+	std::cout << "After check " << std::endl;
 }
 
 /* Check if request is good */
@@ -66,6 +67,7 @@ void Requete::make_body(std::stringstream& ss, std::string token)
 		
 		if (token.find("filename=") == std::string::npos)
 		{
+			std::cout << "Before full " << std::endl;
 			while (!token.empty() && token.find(_boundary) == std::string::npos)
 			{
 				temp += token;
@@ -78,6 +80,7 @@ void Requete::make_body(std::stringstream& ss, std::string token)
 		}
 		else
 		{
+			std::cout << "Before full " << std::endl;
 			_file_name = token.substr(token.find('"'));
 			_file_name.pop_back();//"
 			ss >> token;//Content-Type:
@@ -142,11 +145,13 @@ void Requete::make_POST(std::stringstream& ss)
 			line += token;
 		}
 	}
+	std::cout << "Before full " << std::endl;
 	if (!line.empty() && !key.empty())
 	{
 		line.pop_back();
 		_header.insert(std::pair<std::string, std::string>(key, line));
 	}
+	std::cout << "Before full " << std::endl;
 	make_full_body();
 }
 
