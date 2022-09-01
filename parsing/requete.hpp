@@ -36,25 +36,34 @@ class Requete
 		std::string							getBody() const		{return _body;};
 		size_t								getLen() const		{return _len;};
 		std::string							getFullBody() const	{return _full_body;};
+		std::string							getRequest() const	{return _request;};
+		std::string							getQuery() const	{return _query;};
 		std::map<std::string, std::string>	getHeader() const	{return _header;};
 		std::map<std::string, std::string>	getText() const		{return _text;};
 
 		/* Functions */
 		bool check_tim();
 		void make_body(std::stringstream& ss, std::string token);
-		
+		void make_query();
+		void make_GET(std::stringstream& ss);
+		void make_POST(std::stringstream& ss);
+		void make_full_body();
+
+
 	protected:
-		std::string							_method;
-		std::string							_url;
-		std::string							_protocol;
-		std::string							_boundary;
-		std::string							_name;//content name
-		std::string							_file_name;
-		std::string							_type;//content type
-		std::string							_body;//content body without boundary
-		size_t								_len;
-		std::string							_full_body;//for LXU WU
-		std::map<std::string, std::string>	_header;//
+		std::string							_method;// Method from Header
+		std::string							_url;//URL from Header
+		std::string							_protocol;//Protocol from Header
+		std::string							_boundary;//Boundary from Header
+		std::string							_name;//Name in body
+		std::string							_file_name;//File name in body if exist not always
+		std::string							_type;//File name in body if exist not always
+		std::string							_body;//Content body without boundary
+		size_t								_len;//Len from Header
+		std::string							_full_body;//Content body with boundary
+		std::string							_request;//FULL Request
+		std::string							_query;//Query text after url without ?
+		std::map<std::string, std::string>	_header;//Header
 		std::map<std::string, std::string>	_text;//if more than 1 request + no content type first arg = name && second = body
 };
 

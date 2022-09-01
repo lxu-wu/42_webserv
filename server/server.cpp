@@ -55,7 +55,7 @@ void Server::acceptClient()
                 perror("Connect");
                 exit(-1);
             }
-            std::cout << colors::green << "New connection !" << std::endl;
+            std::cout << colors::green << "New connection !" << std::endl;//Tim
         }
     }
 }
@@ -68,7 +68,7 @@ void Server::handleRequest()
     {
         if(FD_ISSET(clients[i].getClientSocket(), &_read))
         {
-            std::cout << colors::bright_cyan << "New Request ! : ";
+            std::cout << colors::bright_cyan << "New Request ! : ";//Tim
             int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize,
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
@@ -113,14 +113,15 @@ void Server::handleRequest()
             }
             else
             {
-                // if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
-                // {
-                //     // std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
-                //     showError(413, clients[i]);
-                //     kill_client(clients[i]);
-                //     i--;
-                //     continue;
-                // }
+
+                if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
+                {
+                    std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
+                    showError(413, clients[i]);
+                    kill_client(clients[i]);
+                    i--;
+                    continue;
+                }
                 if(!is_allowed(servers[clients[i].getNServer()]->getMethod(), requete.getMethod()))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
@@ -155,7 +156,7 @@ void Server::showPage(Client client, std::string dir)
     FILE *fd = fopen(dir.c_str(), "rb");
     if(fd == NULL)
     {
-        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << colors::on_grey << std::endl;
+        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << std::endl;//Tim
         return ;
     }
     fseek (fd , 0 , SEEK_END);
@@ -184,7 +185,7 @@ void Server::showPage(Client client, std::string dir)
 
 void Server::getMethod(Client &client, std::string url)
 {
-    std::cout << colors::bright_yellow << "GET Method !" << std::endl;
+    std::cout << colors::bright_yellow << "GET Method !" << std::endl;//Tim
 
     url = getRootPatch(url, client.getNServer());
     FILE *fd = fopen(url.c_str(), "rb");
@@ -192,7 +193,7 @@ void Server::getMethod(Client &client, std::string url)
     stat(url.c_str(), &path_stat);
     if(fd == NULL)
     {
-        std::cout << colors::on_bright_red << "ERROR: Could not open "<< url << colors::on_grey << std::endl;
+        std::cout << colors::on_bright_red << "ERROR: Could not open "<< url << colors::on_grey << std::endl;//Tim
         showError(404, client);
     }
     else
