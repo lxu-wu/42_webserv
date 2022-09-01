@@ -74,15 +74,10 @@ void Server::handleRequest()
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
 
-
-
-
-
-
-
             Requete requete(clients[i].request);
             // if (!requete.check_tim())
             //     throw RequestErr();
+            std::cout << "----REQUETE num = " << i << std::endl;
             std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
             std::cout << colors::grey << clients[i].request << std::endl;
 
@@ -125,7 +120,6 @@ void Server::handleRequest()
                         i--;
                     continue;
                 }
-
                 if (is_cgi(requete.getUrl()))
                 {
                     std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
@@ -154,8 +148,6 @@ void Server::handleRequest()
     }
     usleep(500);
 }
-
-
 
 void Server::getMethod(Client &client, std::string url)
 {
