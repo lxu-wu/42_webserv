@@ -10,8 +10,6 @@
 
 void Server::waitClient()
 {
-
-
     FD_ZERO(&readSet);
     FD_ZERO(&writeSet);
     for(size_t i = 0; i < sockets.size(); i++) // Set fd of server
@@ -68,9 +66,8 @@ void Server::handleRequest()
             clients[i].requestSize += Reqsize;
 
             Requete requete(clients[i].request);
-            // if (!requete.check_tim())
-            //     throw RequestErr();
-            std::cout << "----REQUETE num = " << i << std::endl;
+            if (!requete.check_tim())
+                throw RequestErr();
             std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
             std::cout << colors::grey << clients[i].request << std::endl;
 
@@ -144,33 +141,31 @@ void Server::handleRequest()
 
 void Server::getMethod(Client &client, std::string url)
 {
-    // std::cout << colors::bright_yellow << "GET Method !" << std::endl;//Tim
+    std::cout << colors::bright_yellow << "GET Method !" << std::endl;//Tim
 
-    // url = getRootPatch(url, client.getNServer());
-    // FILE *fd = fopen(url.c_str(), "rb");
-    // struct stat path_stat;
-    // stat(url.c_str(), &path_stat);
-    // if(fd == NULL)
-    // {
-    //     std::cout << colors::on_bright_red << "ERROR: Could not open "<< url << colors::on_grey << std::endl;//Tim
-    //     showError(404, client);
-    // }
-    // else
-    // {
-    //     if(S_ISDIR(path_stat.st_mode))
-    //     {
-    //         std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
-    //         if(strcmp(url.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
-    //             showPage(client, servers[client.getNServer()]->getIndex(), 200);
-    //         else
-    //             rep_listing(client.getClientSocket(), url);
-    //     }
-    //     else
-    //     {
-    //         showPage(client, url, 200);
-    //     }
-    //     fclose(fd);
-    // }
+    url = getRootPatch(url, client.getNServer());
+    FILE *fd = fopen(url.c_str(), "rb");
+    struct stat path_stat;
+    stat(url.c_str(), &path_stat);
+    if(fd == NULL)
+    {
+        std::cout << colors::on_bright_red << "ERROR: Could not open "<< url << colors::on_grey << std::endl;//Tim
+        showError(404, client);
+    }
+    else
+    {
+        if(S_ISDIR(path_stat.st_mode))
+        {
+            std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
+            if(strcmp(url.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
+                showPage(client, servers[client.getNServer()]->getIndex(), 200);
+            else
+                rep_listing(client.getClientSocket(), url);
+        }
+        else
+            showPage(client, url, 200);
+        fclose(fd);
+    }
 }
 
 void Server::deleteMethod(Client &client, std::string url)
@@ -199,34 +194,47 @@ void Server::deleteMethod(Client &client, std::string url)
 
 void Server::postMethod(Client client, std::string url, Requete req)
 {
-    url = getRootPatch(url, client.getNServer());
 
+    if(req.getHeader()["Transfer-Encoding"] == "chunked")
+    {
+        showError(411, client);
+        return;
+    }
+    url = getRootPatch(url, client.getNServer());
 	struct stat buf;
 	lstat(url.c_str(), &buf);
-    if(S_ISDIR(buf.st_mode)) {
-        // if()
+
+    if(S_ISDIR(buf.st_mode)) {\
+        if(req.getHeader().find("Content-Type") != req.getHeader().end())
+        {
+            std::cout << "Upload in directory" << std::endl;
+            // while()
+            // {
+
+            // }
+        }
     }
     else
     {
-        // int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
-        // if(fd < 0)
-        // {
-        //     showError(500, client);
-        //     return ;
-        // }
-        // // ADD to queue
-        // int r = write(fd, req.getBody().c_str(), req.getLen());
-        // if(r < 0)
-        // {
-        //     showError(500, client);
-        //     return ;
-        // }
-        // close(fd);
+        int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
+        if(fd < 0)
+        {
+            showError(500, client);
+            return ;
+        }
+        int r = write(fd, req.getBody().c_str(), req.getBody().size()); // ! get body dont work
+        if(r < 0)
+        {
+            showError(500, client);
+            close(fd);
+            return ;
+        }
+        close(fd);
     }
     if(req.getLen() == 0)
-        showPage(client, NULL, 201);
+        showPage(client, "", 204);
     else
-        showPage(client, NULL, 204);
+        showPage(client, "", 201);
 }
 
 

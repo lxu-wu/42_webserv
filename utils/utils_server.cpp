@@ -28,7 +28,7 @@ void Server::initServer()
 	errors.insert(std::make_pair(500, "500 Internal Server Error"));
 	errors.insert(std::make_pair(502, "502 Bad Gateway"));
 	errors.insert(std::make_pair(505, "505 HTTP Version Not Supported"));
-    max_fd = 0;
+    max_fd = -1;
 }
 
 void Server::showError(int err, Client &client)
