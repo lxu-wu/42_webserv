@@ -10,9 +10,7 @@
 
 void Server::waitClient()
 {
-    fd_set readSet;
-    fd_set writeSet;
-    int max_fd = 0;
+
 
     FD_ZERO(&readSet);
     FD_ZERO(&writeSet);
@@ -30,8 +28,6 @@ void Server::waitClient()
     }
     if(select(max_fd + 1, &readSet, &writeSet, 0, 0) < 0)
         exit(-1);
-    _write = writeSet;
-    _read = readSet;
 }
 
 
@@ -42,15 +38,12 @@ void Server::acceptClient()
 
     for(size_t i = 0; i < sockets.size(); i++)
     {
-        if(FD_ISSET(sockets[i].getServerSocket(), &_read))
+        if(FD_ISSET(sockets[i].getServerSocket(), &readSet))
         {
-            Client tmp;
-            tmp.last_time = 0;
-            tmp.setNServer(i);
-            bzero(tmp.request, 2048);
-            tmp.requestSize = 0;
-            tmp.setSocketClient(accept(sockets[i].getServerSocket(), (sockaddr *)&addrclient, &clientSize));
-            clients.push_back(tmp);
+            Client client;
+            client.init(i);
+            client.setSocketClient(accept(sockets[i].getServerSocket(), (sockaddr *)&addrclient, &clientSize));
+            clients.push_back(client);
             if(sockets[i].getServerSocket() < 0)
             {
                 perror("Connect");
@@ -67,7 +60,7 @@ void Server::handleRequest()
 {
     for(size_t i = 0; i < clients.size(); i++)
     {
-        if(FD_ISSET(clients[i].getClientSocket(), &_read))
+        if(FD_ISSET(clients[i].getClientSocket(), &readSet))
         {
             std::cout << colors::bright_cyan << "New Request ! : ";//Tim
             int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize,
@@ -151,33 +144,33 @@ void Server::handleRequest()
 
 void Server::getMethod(Client &client, std::string url)
 {
-    std::cout << colors::bright_yellow << "GET Method !" << std::endl;//Tim
+    // std::cout << colors::bright_yellow << "GET Method !" << std::endl;//Tim
 
-    url = getRootPatch(url, client.getNServer());
-    FILE *fd = fopen(url.c_str(), "rb");
-    struct stat path_stat;
-    stat(url.c_str(), &path_stat);
-    if(fd == NULL)
-    {
-        std::cout << colors::on_bright_red << "ERROR: Could not open "<< url << colors::on_grey << std::endl;//Tim
-        showError(404, client);
-    }
-    else
-    {
-        if(S_ISDIR(path_stat.st_mode))
-        {
-            std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
-            if(strcmp(url.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
-                showPage(client, servers[client.getNServer()]->getIndex(), 200);
-            else
-                rep_listing(client.getClientSocket(), url);
-        }
-        else
-        {
-            showPage(client, url, 200);
-        }
-        fclose(fd);
-    }
+    // url = getRootPatch(url, client.getNServer());
+    // FILE *fd = fopen(url.c_str(), "rb");
+    // struct stat path_stat;
+    // stat(url.c_str(), &path_stat);
+    // if(fd == NULL)
+    // {
+    //     std::cout << colors::on_bright_red << "ERROR: Could not open "<< url << colors::on_grey << std::endl;//Tim
+    //     showError(404, client);
+    // }
+    // else
+    // {
+    //     if(S_ISDIR(path_stat.st_mode))
+    //     {
+    //         std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
+    //         if(strcmp(url.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
+    //             showPage(client, servers[client.getNServer()]->getIndex(), 200);
+    //         else
+    //             rep_listing(client.getClientSocket(), url);
+    //     }
+    //     else
+    //     {
+    //         showPage(client, url, 200);
+    //     }
+    //     fclose(fd);
+    // }
 }
 
 void Server::deleteMethod(Client &client, std::string url)

@@ -2,6 +2,7 @@
 #define CLIENT_HPP
 
 #include <sys/time.h>
+ #include <strings.h>
 
 class Client
 {
@@ -18,6 +19,8 @@ class Client
             last_time = tv.tv_sec;
             return false;
         }
+
+        void init(int i);
 
         int requestSize;
         char request[2049];

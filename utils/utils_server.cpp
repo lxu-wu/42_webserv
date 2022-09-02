@@ -28,6 +28,7 @@ void Server::initServer()
 	errors.insert(std::make_pair(500, "500 Internal Server Error"));
 	errors.insert(std::make_pair(502, "502 Bad Gateway"));
 	errors.insert(std::make_pair(505, "505 HTTP Version Not Supported"));
+    max_fd = 0;
 }
 
 void Server::showError(int err, Client &client)
@@ -56,8 +57,8 @@ void Server::showError(int err, Client &client)
 
 bool Server::kill_client(Client client, Requete req)
 {
-    if(req.getHeader().find("keep-alive") != req.getHeader().end())
-        return false;
+    // if(req.getHeader().find("keep-alive") != req.getHeader().end())
+    //     return false;
     close(client.getClientSocket());
     for(size_t i = 0; i < clients.size(); i++)
     {

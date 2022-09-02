@@ -56,8 +56,9 @@ class Server
 
         char **envp;
 
-        fd_set _read;
-        fd_set _write;
+        int max_fd;
+        fd_set readSet;
+        fd_set writeSet;
 
     private :
         std::vector<Socket> sockets;
