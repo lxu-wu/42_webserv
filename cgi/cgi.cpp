@@ -48,25 +48,25 @@ void newEnv(std::string filePwd, char **envp, Requete &req, std::vector<std::str
         my_env.push_back(envp[i]);
         i++;
     }
-    // my_env.push_back("CONTENT_TYPE=" + req.getHeader()["Content-Type"]);
-    my_env.push_back("CONTENT_TYPE=multipart/form-data; boundary=----WebKitFormBoundaryjmfNuyB4hX5Q2aW");
-    // my_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    my_env.push_back("CONTENT_TYPE=" + req.getHeader()["Content-Type"]);
+    // my_env.push_back("CONTENT_TYPE=multipart/form-data; boundary=----WebKitFormBoundaryjmfNuyB4hX5Q2aW");
+    my_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
     // my_env.push_back("PATH_TRANSLATED=" + req.getPath());
     // my_env.push_back("PATH_TRANSLATED=/Users/lxu-wu/Desktop/42_webserv/upload.py");
-    // my_env.push_back("QUERY_STRING=" + req.getQS);//getQS pour querry string
+    my_env.push_back("QUERY_STRING=" + req.getQuery());//getQS pour querry string
     // my_env.push_back("QUERY_STRING=file1=README.md&");
-    // my_env.push_back("REMOTE_ADDR=127.0.0.1");
-    // my_env.push_back("REQUEST_METHOD=" + req.getMethod());
-    my_env.push_back("REQUEST_METHOD=POST");
-    // my_env.push_back("CONTENT_LENGTH=" + std::to_string(req.getLen()));
-    my_env.push_back("CONTENT_LENGTH=246");
-    // my_env.push_back("SERVER_SOFTWARE=" + req.getProtocol());
-    // my_env.push_back("SERVER_NAME=127.0.0.1");
-    // my_env.push_back("HTTP_ACCEPT=" + req.getHeader()["Accept"]);
+    my_env.push_back("REMOTE_ADDR=127.0.0.1");
+    my_env.push_back("REQUEST_METHOD=" + req.getMethod());
+    // my_env.push_back("REQUEST_METHOD=POST");
+    my_env.push_back("CONTENT_LENGTH=" + std::to_string(req.getLen()));
+    // my_env.push_back("CONTENT_LENGTH=246");
+    my_env.push_back("SERVER_SOFTWARE=" + req.getProtocol());
+    my_env.push_back("SERVER_NAME=127.0.0.1");
+    my_env.push_back("HTTP_ACCEPT=" + req.getHeader()["Accept"]);
     // my_env.push_back("HTTP_ACCEPT=application/octet-stream");
-    // my_env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.getHeader()["Accept-Language"]);
-    // my_env.push_back("HTTP_USER_AGENT=" + req.getHeader()["User-Agent"]);
-    // my_env.push_back("SCRIPT_NAME=" + filePwd);
+    my_env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.getHeader()["Accept-Language"]);
+    my_env.push_back("HTTP_USER_AGENT=" + req.getHeader()["User-Agent"]);
+    my_env.push_back("SCRIPT_NAME=" + filePwd);
     // my_env.push_back("SCRIPT_NAME=upload.py");
 }
 
@@ -76,11 +76,11 @@ char **vecToTab(std::vector<std::string> &vec)
     int i = 0;
 
     tab = (char **)malloc(sizeof(char *) * (vec.size() + 1));
-    // if (!tab)
-    // {
-    //     perror("malloc vecToTab");
-    //     exit(1);
-    // }
+    if (!tab)
+    {
+        perror("malloc vecToTab");
+        exit(1);
+    }
 
     for (std::vector<std::string>::iterator it = vec.begin(); it != vec.end(); it++)
     {
@@ -119,11 +119,11 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
     pipe(fd_out);
     pid_t pid = fork();
 
-    // if (pid == -1)
-    // {
-    //     perror("fork()");
-    //     exit(1);
-    // }
+    if (pid == -1)
+    {
+        perror("fork()");
+        exit(1);
+    }
 
 
 
@@ -135,18 +135,16 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
         // }
         close(fd_in[1]);
         close(fd_out[0]);
-        dup2(fd_in[0], 0);
-        // if (dup2(fd_in[0], 0) == -1)
-        // {
-        //     perror("dup2");
-        //     exit(1);
-        // }
-        dup2(fd_out[1], 1);
-        // if (dup2(fd_out[1], 1) == -1)
-        // {
-        //     perror("dup2");
-        //     exit(1);
-        // }
+        if (dup2(fd_in[0], 0) == -1)
+        {
+            perror("dup2");
+            exit(1);
+        }
+        if (dup2(fd_out[1], 1) == -1)
+        {
+            perror("dup2");
+            exit(1);
+        }
         execve(tab[0], tab, my_env);
         perror("execve");
         exit(1);
@@ -158,33 +156,30 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
     else
     {
         fdIn = dup(0);
-        // if (fdIn == 0)
-        // {
-        //     {
-        //     perror("dup");
-        //     exit(1);
-        //     }
-        // }
-        // if (dup2(fd_in[0], 0) == -1)
-        // {
-        //     perror("dup2");
-        //     exit(1);
-        // }
+        if (fdIn == -1)
+        {
+            perror("dup");
+            exit(1);
+        }
+        if (dup2(fd_in[0], 0) == -1)
+        {
+            perror("dup2");
+            exit(1);
+        }
         if (!req.getBody().empty())
         {
             // write(fd_in[1], req.getBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
         }
         // write(fd_in[1], req.getBody().c_str(), 246);
-        write(fd_in[1], "------WebKitFormBoundaryjmfNuyB4hX5Q2aW\nContent-Disposition: form-data; name=\"file1\"; filename=\"README.md\"\nContent-Type: application/octet-stream\n\n# 42_webserv\nON VA LE FAIRE TODAY I FINISH CGI\n------WebKitFormBoundaryjmfNuyB4hX5Q2aW--\n", 246);
+        write(fd_in[1], "------WebKitFormBoundaryjmfNuyB4hX5Q2aW\nContent-Disposition: form-data; name=\"file1\"; filename=\"README.md\"\nContent-Type: application/octet-stream\n\n# 42_webserv\nON VA LE FAIRE TODAY I FINISH CGI\n------WebKitFormBoundaryjmfNuyB4hX5Q2aW--\n", 236);
         close(fd_in[0]);
         close(fd_in[1]);
         waitpid(pid, 0, 0);
-        dup2(fdIn, 0);
-        // if (dup2(fdIn, 0) == -1)
-        // {
-        //     perror("dup2");
-        //     exit(1);
-        // }
+        if (dup2(fdIn, 0) == -1)
+        {
+            perror("dup2");
+            exit(1);
+        }
 
         free(my_env);
 
@@ -198,22 +193,22 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
 
         close(fd_out[1]);
         i = read(fd_out[0], buff, 2040);
-        // if (i == -1)
-        // {
-        //     perror("read");
-        //     exit(1);
-        // }
+        if (i == -1)
+        {
+            perror("read");
+            exit(1);
+        }
         buff[i] = 0;
         ret += std::string(buff);
         while (i > 0)
         {
             i = read(fd_out[0], buff, 2040);
             if (i == -1)
-            // {
-            //     perror("read");
-            //     exit(1);
+            {
+                perror("read");
+                exit(1);
             
-            // }
+            }
             buff[i] = 0;
             ret += std::string(buff);
         }
