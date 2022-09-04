@@ -135,7 +135,7 @@ void Server::handleRequest()
             if(kill_client(clients[i], requete))
                 i--;
             clients[i].requestSize = 0;
-            bzero(clients[i].request, 2048);
+            bzero(clients[i].request, 65537);
         }
     }
     usleep(500);

@@ -34,7 +34,7 @@ class Client
         void init(int i);
 
         int requestSize;
-        char *request;
+        char request[65537];
         size_t last_time;
 
     private :
