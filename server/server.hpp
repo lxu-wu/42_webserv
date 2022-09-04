@@ -34,18 +34,19 @@ class Server
         void waitClient(); // wait until client is connected
         void acceptClient(); // accept client and register them in vec
         void handleRequest(); // handle GET POST
-        void showPage(Client client, std::string dir);
+        void showPage(Client client, std::string dir, int code);
         void showError(int err, Client &client);
-        bool kill_client(Client client);
+        bool kill_client(Client client, Requete req);
         bool is_allowed(std::vector<std::string> methodlist, std::string methodreq); // say if a method is allowed
         void rep_listing(int socket, std::string path);
         bool is_cgi(std::string filename);
+        bool is_timeout(Client client);
 
 
         std::string getRootPatch(std::string url, int i);
         void getMethod(Client &client, std::string url);
         void deleteMethod(Client &client, std::string url);
-        void postMethod(Client &client, std::string url);
+        void postMethod(Client client, std::string url, Requete req);
 
         std::vector<Socket> getSocketList() {return sockets; }
         std::vector<Client> getClientsList() {return clients; }
@@ -55,8 +56,9 @@ class Server
 
         char **envp;
 
-        fd_set _read;
-        fd_set _write;
+        int max_fd;
+        fd_set readSet;
+        fd_set writeSet;
 
     private :
         std::vector<Socket> sockets;

@@ -10,10 +10,6 @@
 
 void Server::waitClient()
 {
-    fd_set readSet;
-    fd_set writeSet;
-    int max_fd = 0;
-
     FD_ZERO(&readSet);
     FD_ZERO(&writeSet);
     for(size_t i = 0; i < sockets.size(); i++) // Set fd of server
@@ -30,8 +26,6 @@ void Server::waitClient()
     }
     if(select(max_fd + 1, &readSet, &writeSet, 0, 0) < 0)
         exit(-1);
-    _write = writeSet;
-    _read = readSet;
 }
 
 
@@ -42,14 +36,12 @@ void Server::acceptClient()
 
     for(size_t i = 0; i < sockets.size(); i++)
     {
-        if(FD_ISSET(sockets[i].getServerSocket(), &_read))
+        if(FD_ISSET(sockets[i].getServerSocket(), &readSet))
         {
-            Client tmp;
-            tmp.setNServer(i);
-            bzero(tmp.request, 2048);
-            tmp.requestSize = 0;
-            tmp.setSocketClient(accept(sockets[i].getServerSocket(), (sockaddr *)&addrclient, &clientSize));
-            clients.push_back(tmp);
+            Client client;
+            client.init(i);
+            client.setSocketClient(accept(sockets[i].getServerSocket(), (sockaddr *)&addrclient, &clientSize));
+            clients.push_back(client);
             if(sockets[i].getServerSocket() < 0)
             {
                 perror("Connect");
@@ -66,12 +58,13 @@ void Server::handleRequest()
 {
     for(size_t i = 0; i < clients.size(); i++)
     {
-        if(FD_ISSET(clients[i].getClientSocket(), &_read))
+        if(FD_ISSET(clients[i].getClientSocket(), &readSet))
         {
             std::cout << colors::bright_cyan << "New Request ! : ";//Tim
             int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize,
                 MAX_REQUEST - clients[i].requestSize, 0);
             clients[i].requestSize += Reqsize;
+
             Requete requete(clients[i].request);
             if (!requete.check_tim())
                 throw RequestErr();
@@ -80,9 +73,8 @@ void Server::handleRequest()
 
             if(clients[i].requestSize > MAX_REQUEST)
             {
-                std::cout << colors::on_bright_red << "out of range" << std::endl;
                 showError(413, clients[i]);
-                if(kill_client(clients[i]))
+                if(kill_client(clients[i], requete))
                     i--;
                 continue;
             }
@@ -90,96 +82,61 @@ void Server::handleRequest()
             {
                 std::cout << "Recv failed !" << std::endl;
                 showError(500, clients[i]);
-                kill_client(clients[i]);
+                kill_client(clients[i], requete);
                 i--;
             }
             else if(Reqsize == 0)
             {
                 std::cout << colors::on_bright_red << "Connection is closed !" << std::endl;
-                kill_client(clients[i]);
+                kill_client(clients[i], requete);
                 i--;
             }
-            else if (is_cgi(requete.getUrl()))
-            {
-                std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
-                std::string rescgi = execCGI(requete.getUrl(), envp, requete);
-                std::cout << rescgi << std::endl;
-                if(rescgi.empty())
-                    showError(404, clients[i]);
-                rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
-                send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
-                    
-            }
+
             else
             {
-
-                if(10 > stoi(servers[clients[i].getNServer()]->getBody())) // ! change value
+                if(requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
                     showError(413, clients[i]);
-                    kill_client(clients[i]);
-                    i--;
+                    if(kill_client(clients[i], requete))
+                        i--;
                     continue;
                 }
                 if(!is_allowed(servers[clients[i].getNServer()]->getMethod(), requete.getMethod()))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
                     showError(405, clients[i]);
-                    kill_client(clients[i]);
-                    i--;
+                    if(kill_client(clients[i], requete))
+                        i--;
                     continue;
                 }
-                if (requete.getMethod() == "GET") {
+                if (is_cgi(requete.getUrl()))
+                {
+                    std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
+                    std::string rescgi = execCGI(requete.getUrl(), envp, requete);
+                    if(rescgi.empty())
+                        showError(404, clients[i]);
+
+                    std::cout << rescgi << std::endl;
+                    rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
+                    send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
+                }
+                // else if (clients[i].is_timeout())
+                //     showError(408, clients[i]);
+                else if (requete.getMethod() == "GET")
                     getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
-                }
-                else if (requete.getMethod() == "POST") {
-                    postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
-                    
-                }
-                else if (requete.getMethod() == "DELETE") {
+                else if (requete.getMethod() == "POST")
+                    postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()), requete);
+                else if (requete.getMethod() == "DELETE")
                     deleteMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
-                }
             }
-            if(kill_client(clients[i]))
+            if(kill_client(clients[i], requete))
                 i--;
             clients[i].requestSize = 0;
             bzero(clients[i].request, 2048);
         }
     }
     usleep(500);
-}
-
-
-void Server::showPage(Client client, std::string dir)
-{
-    FILE *fd = fopen(dir.c_str(), "rb");
-    if(fd == NULL)
-    {
-        std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << colors::on_grey << std::endl;
-        return ;
-    }
-    fseek (fd , 0 , SEEK_END);
-    int lSize = ftell (fd);
-    rewind (fd);
-
-    std::string type = find_type(dir);
-
-    char file[lSize];
-    size_t len = fread(file, 1, lSize, fd);
-    fclose(fd);
-    std::string data(file, len);
-    std::string hello = std::string("HTTP/1.1 200 OK\n") + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n" + data;
-    int ret = send(client.getClientSocket() , hello.c_str(), hello.size(), 0);
-    if(ret < 0)
-    {
-        showError(500, client);
-        return ;
-    }
-    else if(ret == 0)
-    {
-        showError(400, client);
-        return ;
-    }
 }
 
 void Server::getMethod(Client &client, std::string url)
@@ -201,14 +158,12 @@ void Server::getMethod(Client &client, std::string url)
         {
             std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
             if(strcmp(url.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
-                showPage(client, servers[client.getNServer()]->getIndex());
+                showPage(client, servers[client.getNServer()]->getIndex(), 200);
             else
                 rep_listing(client.getClientSocket(), url);
         }
         else
-        {
-            showPage(client, url);
-        }
+            showPage(client, url, 200);
         fclose(fd);
     }
 }
@@ -216,6 +171,9 @@ void Server::getMethod(Client &client, std::string url)
 void Server::deleteMethod(Client &client, std::string url)
 {
     std::cout << colors::bright_yellow << "DELETE Method !" << std::endl;
+    url = getRootPatch(url, client.getNServer());
+
+
     FILE *fd = fopen(url.c_str(), "r");
     if(!fd)
     {
@@ -234,28 +192,49 @@ void Server::deleteMethod(Client &client, std::string url)
     std::cout << colors::green << url << " as been delete !" << std::endl;
 }
 
-void Server::postMethod(Client &client, std::string url)
+void Server::postMethod(Client client, std::string url, Requete req)
 {
+
+    if(req.getHeader()["Transfer-Encoding"] == "chunked")
+    {
+        showError(411, client);
+        return;
+    }
+    url = getRootPatch(url, client.getNServer());
 	struct stat buf;
 	lstat(url.c_str(), &buf);
-    if(S_ISDIR(buf.st_mode)) {
-        // if()
+
+    if(S_ISDIR(buf.st_mode)) {\
+        if(req.getHeader().find("Content-Type") != req.getHeader().end())
+        {
+            std::cout << "Upload in directory" << std::endl;
+            // while()
+            // {
+
+            // }
+        }
     }
     else
     {
-        // int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
-        // if(fd < 0)
-        // {
-        //     showError(500, client);
-        //     return ;
-        // }
-        // // ADD to queue
-        // int r = write(fd, client.request, 2049);
-        // if(r < 0)
-        //     showError(500, client);
-        // close(fd);
+        int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
+        if(fd < 0)
+        {
+            showError(500, client);
+            return ;
+        }
+        int r = write(fd, req.getBody().c_str(), req.getBody().size()); // ! get body dont work
+        if(r < 0)
+        {
+            showError(500, client);
+            close(fd);
+            return ;
+        }
+        close(fd);
     }
-    
+    if(req.getLen() == 0)
+        showPage(client, "", 204);
+    else
+        showPage(client, "", 201);
 }
 
 

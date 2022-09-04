@@ -12,6 +12,7 @@ void Socket::setup(size_t port) {
         exit(-1);
     }
     fcntl(serverSocket, F_SETFL, O_NONBLOCK);
+    // if(setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (void *)&time_start, sizeof(struct)))
     if((bind(serverSocket, (struct sockaddr *)&address, sizeof(address))) < 0)
     {
         perror("bind");

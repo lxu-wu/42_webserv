@@ -19,6 +19,15 @@
 # include <iterator>
 # include <string>
 
+/* 
+------WebKitFormBoundaryfBeADaUzEeiKFQHq
+Content-Disposition: form-data; name="file1"; filename=""
+Content-Type: application/octet-stream
+
+
+------WebKitFormBoundaryfBeADaUzEeiKFQHq--
+*/
+
 class Requete
 {
 	public:
@@ -44,6 +53,7 @@ class Requete
 		/* Functions */
 		bool check_tim();
 		void make_body(std::stringstream& ss, std::string token);
+		void make_body_inputs(std::stringstream& ss, std::string token);
 		void make_query();
 		void make_GET(std::stringstream& ss);
 		void make_POST(std::stringstream& ss);
@@ -68,3 +78,4 @@ class Requete
 };
 
 #endif
+
