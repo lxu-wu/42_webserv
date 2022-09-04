@@ -162,8 +162,10 @@ void Requete::make_POST(std::stringstream& ss)
 	std::string token, line, key;
 	std::string buff;
 
+	std::cout << "token = " << token << std::endl;
 	while (ss >> token)
 	{
+		std::cout << "Token = " << token << std::endl;
 		if (token.find("boundary=") != std::string::npos)
 		{
 			_boundary = token.substr(token.find("boundary=") + 9);
@@ -178,23 +180,23 @@ void Requete::make_POST(std::stringstream& ss)
 		}
 		else if (!_boundary.empty() && token.find(_boundary) != std::string::npos) //begin of body
 		{
-			std::cout << "Request len = " << _request.size() << std::endl;
-			std::cout << "BODY    len = " << _len << std::endl;
-			if (_request.size() > _len)//images
-			{
-				_full_body = _request.substr(_request.size() - _len);
-				//make_body_inputs(ss, token);
-			}
-			else
-			{
-				_full_body = _request.substr(_request.size());
-			}
-			std::cout << "Full Body = " << std::endl << _full_body << std::endl;
-			std::cout << "END Body" << std::endl;
+			// std::cout << "Request len = " << _request.size() << std::endl;
+			// std::cout << "BODY    len = " << _len << std::endl;
+			// if (_request.size() > _len)//images
+			// {
+			// 	_full_body = _request.substr(_request.size() - _len);
+			// 	//make_body_inputs(ss, token);
+			// }
+			// else
+			// {
+			// 	_full_body = _request.substr(_request.size());
+			// }
+			// std::cout << "Full Body = " << std::endl << _full_body << std::endl;
+			// std::cout << "END Body" << std::endl;
 			//make_body(ss, token);
 			break;
 		}
-		else if (token.back() == ':')
+		if (token.back() == ':')
 		{
 			if (!key.empty() && key != token)
 			{
@@ -212,6 +214,25 @@ void Requete::make_POST(std::stringstream& ss)
 			line += token;
 		}
 	}
+	std::cout << "Request len = " << _request.size() << std::endl;
+	std::cout << "BODY    len = " << _len << std::endl;
+	// for (size_t i = 0; i < count; i++)
+	// {
+	// 	/* code */
+	// }
+	
+	if (_request.size() > _len)//images
+	{
+		_full_body = _request.substr(_request.size() - _len);
+		//make_body_inputs(ss, token);
+	}
+	else
+	{
+		_full_body = _request.substr(_request.size() - 1);
+	}
+	std::cout << "_full_body len = " << _full_body.length() << std::endl;
+	std::cout << "Full Body = " << std::endl << _full_body << std::endl;
+	std::cout << "END Body" << std::endl;
 	if (!line.empty() && !key.empty())
 	{
 		line.pop_back();
