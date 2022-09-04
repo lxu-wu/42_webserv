@@ -179,11 +179,12 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
         close(fd_in[0]);
         close(fd_in[1]);
         waitpid(pid, 0, 0);
-        if (dup2(fdIn, 0) == -1)
-        {
-            perror("dup2");
-            exit(1);
-        }
+        dup2(fdIn, 0);
+        // if (dup2(fdIn, 0) == -1)
+        // {
+        //     perror("dup2");
+        //     exit(1);
+        // }
 
         free(my_env);
 
