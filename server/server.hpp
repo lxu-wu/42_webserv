@@ -17,6 +17,8 @@
 #include <sstream>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <stdlib.h>
+#include <dirent.h>
 
 #include "../parsing/webserv.hpp"
 #include "../parsing/requete.hpp"

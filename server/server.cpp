@@ -1,8 +1,7 @@
 #include "../server/server.hpp"
 #include "../parsing/requete.hpp"
 #include "../parsing/webserv.hpp"
-#include <stdlib.h>
-#include <dirent.h>
+
 
 // TO DO
 // + Add parse url of req and root
@@ -141,29 +140,38 @@ void Server::handleRequest()
 
 void Server::getMethod(Client &client, std::string url)
 {
-    std::cout << colors::bright_yellow << "GET Method !" << std::endl;//Tim
+    std::cout << colors::bright_yellow << "GET Method !" << std::endl;
 
-    url = getRootPatch(url, client.getNServer());
-    FILE *fd = fopen(url.c_str(), "rb");
+    if(url.size() >= 64)
+    {
+        showError(414, client);
+        return ;
+    }
     struct stat path_stat;
-    stat(url.c_str(), &path_stat);
+
+    std::string fullurl = getRootPatch(url, client.getNServer());
+    FILE *fd = fopen(fullurl.c_str(), "rb");
+    stat(fullurl.c_str(), &path_stat);
+
     if(fd == NULL)
     {
-        std::cout << colors::on_bright_red << "ERROR: Could not open "<< url << colors::on_grey << std::endl;//Tim
+        std::cout << colors::on_bright_blue << "Ressource not find : "<< fullurl << colors::on_grey << std::endl;
         showError(404, client);
     }
     else
     {
         if(S_ISDIR(path_stat.st_mode))
         {
-            std::cout << colors::on_bright_red << "File is a directory !" << colors::on_grey << std::endl;
-            if(strcmp(url.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
-                showPage(client, servers[client.getNServer()]->getIndex(), 200);
+            std::cout << colors::on_bright_blue << "File is a directory !" << colors::on_grey << std::endl;
+            std::cerr << fullurl.c_str() << " vs " << servers[client.getNServer()]->getRoot().c_str() << std::endl;
+
+            if(strcmp(fullurl.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
+                showPage(client, fullurl + servers[client.getNServer()]->getIndex(), 200);
             else
                 rep_listing(client.getClientSocket(), url);
         }
         else
-            showPage(client, url, 200);
+            showPage(client, fullurl, 200);
         fclose(fd);
     }
 }
@@ -235,34 +243,5 @@ void Server::postMethod(Client client, std::string url, Requete req)
         showPage(client, "", 204);
     else
         showPage(client, "", 201);
-}
-
-
-void Server::rep_listing(int socket, std::string path)
-{
-    std::cout << colors::green << "Show Repository Listing" << std::endl;
-    DIR *dir;
-    struct dirent *ent;
-    std::string tosend = "HTTP/1.1 200 OK\n\n<!DOCTYPE html>\n<html>\n<body>\n<h1>" + path + "</h1>\n<pre>\n";
-    std::string data;
-
-
-    if ((dir = opendir (path.c_str())) != NULL)
-    {
-        while ((ent = readdir (dir)) != NULL)
-        {
-
-            tosend += "<a href=\""+ std::string(ent->d_name) + "\">" + std::string(ent->d_name) + "</a>\n";
-            std::cout << path + "    "  +  std::string(ent->d_name) << std::endl;
-        }
-        closedir (dir);
-    }
-    else
-    {
-        perror ("Directory listing");
-        return ;
-    }
-    tosend += "</pre>\n</body>\n</html>\n";
-    send(socket , tosend.c_str(), tosend.size(), 0);
 }
 

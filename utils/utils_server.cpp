@@ -57,6 +57,7 @@ void Server::showError(int err, Client &client)
 
 bool Server::kill_client(Client client, Requete req)
 {
+    (void)req;
     // if(req.getHeader().find("keep-alive") != req.getHeader().end())
     //     return false;
     close(client.getClientSocket());
@@ -101,6 +102,8 @@ bool Server::is_allowed(std::vector<std::string> methodlist, std::string methodr
 std::string Server::getRootPatch(std::string url, int i)
 {
     std::string urlroot = servers[i]->getRoot();
+    // std::vector<Location *> locs = servers[i]->getLocation();
+    
     // std::string root = info.getServers()[i]->getRoot();
     // if(!strncmp("./", servers[i]->getRoot().c_str(), 2))
     //     urlroot += servers[i]->getRoot().substr(1, servers[i]->getRoot().size());
@@ -161,3 +164,32 @@ void Server::showPage(Client client, std::string dir, int code)
     else if(ret == 0)
         showError(400, client);
 }
+
+void Server::rep_listing(int socket, std::string path)
+{
+    std::cout << colors::green << "Show Repository Listing" << std::endl;
+    DIR *dir;
+    struct dirent *ent;
+    std::string tosend = "HTTP/1.1 200 OK\n\n<!DOCTYPE html>\n<html>\n<body>\n<h1>" + path + "</h1>\n<pre>\n";
+    std::string data;
+
+
+    if ((dir = opendir (path.c_str())) != NULL)
+    {
+        while ((ent = readdir (dir)) != NULL)
+        {
+
+            tosend += "<a href=\"" + std::string(path) + "/" + std::string(ent->d_name) + "\">" + std::string(ent->d_name) + "</a>\n";
+            std::cout << path + "    "  +  std::string(ent->d_name) << std::endl;
+        }
+        closedir (dir);
+    }
+    else
+    {
+        perror ("Directory listing");
+        return ;
+    }
+    tosend += "</pre>\n</body>\n</html>\n";
+    send(socket , tosend.c_str(), tosend.size(), 0);
+}
+
