@@ -165,7 +165,7 @@ void Requete::make_POST(std::stringstream& ss)
 	std::cout << "token = " << token << std::endl;
 	while (ss >> token)
 	{
-		std::cout << "Token = " << token << std::endl;
+		// std::cout << "Token = " << token << std::endl;
 		if (token.find("boundary=") != std::string::npos)
 		{
 			_boundary = token.substr(token.find("boundary=") + 9);

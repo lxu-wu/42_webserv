@@ -2,12 +2,23 @@
 #define CLIENT_HPP
 
 #include <sys/time.h>
- #include <strings.h>
+#include <strings.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+
 
 class Client
 {
     public :
-        void setSocketClient(int sock) { clientSocket = sock; }
+        void setSocketClient(int sock) {
+            clientSocket = sock;
+
+            fcntl(clientSocket, F_SETFL, O_NONBLOCK);
+            if(setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, NULL, 0) < 0)
+                return ;
+            
+        }
         int getClientSocket() { return clientSocket; }
         int getNServer() { return n_server; }
         void setNServer(int n) { n_server = n; }
@@ -23,7 +34,7 @@ class Client
         void init(int i);
 
         int requestSize;
-        char request[2049];
+        char *request;
         size_t last_time;
 
     private :

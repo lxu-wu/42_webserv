@@ -39,7 +39,7 @@ void Server::acceptClient()
         {
             Client client;
             client.init(i);
-            client.setSocketClient(accept(sockets[i].getServerSocket(), (sockaddr *)&addrclient, &clientSize));
+            client.setSocketClient(accept(sockets[i].getServerSocket(), (struct sockaddr *)&addrclient, &clientSize));
             clients.push_back(client);
             if(sockets[i].getServerSocket() < 0)
             {
@@ -62,29 +62,19 @@ void Server::handleRequest()
         {
             std::cout << colors::bright_cyan << "New Request ! : ";
 
-            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request, MAX_REQUEST, 0);
+            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, 65536, 0);
 
+            std::cout << Reqsize << std::endl;
             
             clients[i].requestSize += Reqsize;
             Requete requete(clients[i].request);
             if (!requete.check_tim())
                 throw RequestErr();
 
-            // for(int i = 0; i < 10; i++)
-            // {
-            //     char *buffer = (char *)malloc(2048 * sizeof(char));
-            //     bzero(buffer, 2049);
-            //     std::cout << recv(clients[i].getClientSocket() , buffer, 2048, 0) << std::endl;
-            //     perror("read");
-            //     std::cout << buffer;
-            //     // std::cout << std::string(clients[i].request) + std::string(buffer) << "\n";
-            //     free(buffer);
-            // }
-
             std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
             std::cout << colors::grey << clients[i].request << std::endl;
 
-            if(clients[i].requestSize > MAX_REQUEST)
+            if(clients[i].requestSize - requete.getLen() > MAX_REQUEST)
             {
                 showError(413, clients[i]);
                 if(kill_client(clients[i], requete))
@@ -104,7 +94,6 @@ void Server::handleRequest()
                 kill_client(clients[i], requete);
                 i--;
             }
-
             else
             {
                 if(requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
@@ -244,6 +233,7 @@ void Server::postMethod(Client client, std::string url, Requete req)
             showError(500, client);
             return ;
         }
+        std::cerr << "Body --->" << req.getBody() << std::endl;
         int r = write(fd, req.getBody().c_str(), req.getBody().size()); // ! get body dont work
         if(r < 0)
         {
