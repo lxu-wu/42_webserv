@@ -14,7 +14,7 @@
 
 Requete::Requete(std::string requete)
 {
-	std::cout << "Before check " << std::endl;
+	std::cout << std::endl << "Before check " << std::endl;
 	std::stringstream ss(requete);
 	_request = requete;
 	_len = 0;
@@ -22,6 +22,7 @@ Requete::Requete(std::string requete)
     ss >> this->_url;
 	ss >> this->_protocol;
 	make_query();
+	std::cout << "Method = " << _method << std::endl;
 	if (_method == "GET")
 	{
 		std::cout << "---- Before GET " << std::endl;
@@ -179,21 +180,10 @@ void Requete::make_POST(std::stringstream& ss)
 		{
 			std::cout << "Request len = " << _request.size() << std::endl;
 			std::cout << "BODY    len = " << _len << std::endl;
-			// for (size_t i = 1050; i < _request.size(); i++)
-			// {
-			// 	std::cout << "Request " << i << " = " << _request[i] << std::endl;
-			// }
-			
-			// _full_body += token;
-			// while (ss >> token)
-			// {
-			// 	_full_body += " ";
-			// 	_full_body += token;
-			// }
 			if (_request.size() > _len)//images
 			{
 				_full_body = _request.substr(_request.size() - _len);
-				make_body_inputs(ss, token);
+				//make_body_inputs(ss, token);
 			}
 			else
 			{
@@ -222,13 +212,11 @@ void Requete::make_POST(std::stringstream& ss)
 			line += token;
 		}
 	}
-	std::cout << "Before full " << std::endl;
 	if (!line.empty() && !key.empty())
 	{
 		line.pop_back();
 		_header.insert(std::pair<std::string, std::string>(key, line));
 	}
-	std::cout << "Before full " << std::endl;
 	make_full_body();
 }
 
@@ -237,7 +225,6 @@ void Requete::make_GET(std::stringstream& ss)
 {
 	std::string token, line, key;
 
-	std::cout << "GET USED" << std::endl;
 	while (ss >> token)
 	{
 		if (token.back() == ':')

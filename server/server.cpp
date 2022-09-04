@@ -53,20 +53,34 @@ void Server::acceptClient()
 
 
 
+
 void Server::handleRequest()
 {
     for(size_t i = 0; i < clients.size(); i++)
     {
         if(FD_ISSET(clients[i].getClientSocket(), &readSet))
         {
-            std::cout << colors::bright_cyan << "New Request ! : ";//Tim
-            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize,
-                MAX_REQUEST - clients[i].requestSize, 0);
-            clients[i].requestSize += Reqsize;
+            std::cout << colors::bright_cyan << "New Request ! : ";
 
+            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request, MAX_REQUEST, 0);
+
+            
+            clients[i].requestSize += Reqsize;
             Requete requete(clients[i].request);
             if (!requete.check_tim())
                 throw RequestErr();
+
+            // for(int i = 0; i < 10; i++)
+            // {
+            //     char *buffer = (char *)malloc(2048 * sizeof(char));
+            //     bzero(buffer, 2049);
+            //     std::cout << recv(clients[i].getClientSocket() , buffer, 2048, 0) << std::endl;
+            //     perror("read");
+            //     std::cout << buffer;
+            //     // std::cout << std::string(clients[i].request) + std::string(buffer) << "\n";
+            //     free(buffer);
+            // }
+
             std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
             std::cout << colors::grey << clients[i].request << std::endl;
 
@@ -163,12 +177,12 @@ void Server::getMethod(Client &client, std::string url)
         if(S_ISDIR(path_stat.st_mode))
         {
             std::cout << colors::on_bright_blue << "File is a directory !" << colors::on_grey << std::endl;
-            std::cerr << fullurl.c_str() << " vs " << servers[client.getNServer()]->getRoot().c_str() << std::endl;
+            // std::cerr << fullurl.c_str() << " vs " << servers[client.getNServer()]->getRoot().c_str() << std::endl;
 
             if(strcmp(fullurl.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
                 showPage(client, fullurl + servers[client.getNServer()]->getIndex(), 200);
             else
-                rep_listing(client.getClientSocket(), url);
+                rep_listing(client.getClientSocket(), url, fullurl);
         }
         else
             showPage(client, fullurl, 200);

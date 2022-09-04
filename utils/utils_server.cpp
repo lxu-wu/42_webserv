@@ -165,21 +165,21 @@ void Server::showPage(Client client, std::string dir, int code)
         showError(400, client);
 }
 
-void Server::rep_listing(int socket, std::string path)
+void Server::rep_listing(int socket, std::string path, std::string fullurl)
 {
     std::cout << colors::green << "Show Repository Listing" << std::endl;
+
     DIR *dir;
     struct dirent *ent;
-    std::string tosend = "HTTP/1.1 200 OK\n\n<!DOCTYPE html>\n<html>\n<body>\n<h1>" + path + "</h1>\n<pre>\n";
     std::string data;
 
+    std::string tosend = "HTTP/1.1 200 OK\n\n<!DOCTYPE html>\n<html>\n<body>\n<h1>" + path + "</h1>\n<pre>\n";
 
-    if ((dir = opendir (path.c_str())) != NULL)
+    if ((dir = opendir (fullurl.c_str())) != NULL)
     {
         while ((ent = readdir (dir)) != NULL)
         {
-
-            tosend += "<a href=\"" + std::string(path) + "/" + std::string(ent->d_name) + "\">" + std::string(ent->d_name) + "</a>\n";
+            tosend += "<a href=\"" + ((std::string(ent->d_name) == ".") ? std::string(path) : (std::string(path) + "/" + std::string(ent->d_name))) + "\">" + std::string(ent->d_name) + "</a>\n";
             std::cout << path + "    "  +  std::string(ent->d_name) << std::endl;
         }
         closedir (dir);
