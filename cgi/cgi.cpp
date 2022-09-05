@@ -33,19 +33,20 @@ std::string searchExec(std::string filePwd, char **envp)
     return (0);
 }
 
-void newEnv(std::string filePwd, char **envp, Requete &req, std::vector<std::string> &my_env)
+void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env)
 {
-    (void)req;
-    size_t  i = 0;
-
-    while (envp[i])
-        i++;
-
-    i = 0;
-    while (envp[i])
     {
-        my_env.push_back(envp[i]);
-        i++;
+        size_t  i = 0;
+
+        while (envp[i])
+            i++;
+
+        i = 0;
+        while (envp[i])
+        {
+            my_env.push_back(envp[i]);
+            i++;
+        }
     }
     my_env.push_back("CONTENT_TYPE=" + req.getHeader()["Content-Type"]);
     // my_env.push_back("CONTENT_TYPE=multipart/form-data; boundary=----WebKitFormBoundaryjmfNuyB4hX5Q2aW");
@@ -61,10 +62,15 @@ void newEnv(std::string filePwd, char **envp, Requete &req, std::vector<std::str
    
     {
         std::string str;
+        std::string tab[] = {"post", "get", "delete"};
 
-        for (std::string::iterator it = req.getMethod().begin(); it != req.getMethod().end(); it++)
-            str.push_back(toupper(*it));
-        my_env.push_back("REQUEST_METHOD=" + str);
+        if (req.getMethod() == "post")
+            my_env.push_back("REQUEST_METHOD=POST");
+        else if (req.getMethod() == "get")
+            my_env.push_back("REQUEST_METHOD=GET");
+        else if (req.getMethod() == "delete")
+            my_env.push_back("REQUEST_METHOD=DELETE");
+            
         // my_env.push_back("REQUEST_METHOD=POST");
     }
    
@@ -77,6 +83,7 @@ void newEnv(std::string filePwd, char **envp, Requete &req, std::vector<std::str
     my_env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.getHeader()["Accept-Language"]);
     my_env.push_back("HTTP_USER_AGENT=" + req.getHeader()["User-Agent"]);
     my_env.push_back("SCRIPT_NAME=" + req.getUrl());
+    my_env.push_back("HTTP_REFERER=" + req.getHeader()["Referer"]);
     // my_env.push_back("SCRIPT_NAME=upload.py");
 }
 
@@ -122,7 +129,7 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
     char **my_env;
 
     std::vector<std::string> env;
-    newEnv(filePwd, envp, req, env);
+    newEnv(envp, req, env);
     my_env = vecToTab(env);
 
     pipe(fd_in);
@@ -178,10 +185,10 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
         }
         if (!req.getBody().empty())
         {
-            // write(fd_in[1], req.getBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
+            write(fd_in[1], req.getBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
         }
         // write(fd_in[1], req.getBody().c_str(), 246);
-        write(fd_in[1], "------WebKitFormBoundaryjmfNuyB4hX5Q2aW\nContent-Disposition: form-data; name=\"file1\"; filename=\"README.md\"\nContent-Type: application/octet-stream\n\n# 42_webserv\nON VA LE FAIRE TODAY I FINISH CGI\n------WebKitFormBoundaryjmfNuyB4hX5Q2aW--\n", 236);
+        // write(fd_in[1], "------WebKitFormBoundaryjmfNuyB4hX5Q2aW\nContent-Disposition: form-data; name=\"file1\"; filename=\"README.md\"\nContent-Type: application/octet-stream\n\n# 42_webserv\nON VA LE FAIRE TODAY I FINISH CGI\n------WebKitFormBoundaryjmfNuyB4hX5Q2aW--\n", 236);
         close(fd_in[0]);
         close(fd_in[1]);
         waitpid(pid, 0, 0);
