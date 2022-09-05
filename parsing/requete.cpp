@@ -14,16 +14,11 @@
 
 Requete::Requete(std::string requete)
 {
-	err = -1;
 	std::cout << std::endl << "Before check " << std::endl;
-	int flsize;
-	for(flsize = 0; requete[flsize] && requete[flsize] != '\n'; flsize++);
 	std::stringstream ss(requete);
 	_request = requete;
-	_len = std::string::npos;
+	_len = 0;
     ss >> this->_method;
-	if((_method == "POST" && flsize != 16) || (_method == "GET" && flsize != 15))
-		err = 400;
     ss >> this->_url;
 	ss >> this->_protocol;
 	make_query();
@@ -45,8 +40,6 @@ Requete::Requete(std::string requete)
 /* Check if request is good */
 int Requete::check_tim()
 {
-	if (_protocol.empty() || _protocol.empty())
-		return 400;
 	if (_method != "POST" && _method != "GET" && _method != "DELETE")
 		return 405;
 	if (_protocol != "HTTP/1.1")
@@ -168,8 +161,8 @@ void Requete::make_POST(std::stringstream& ss)
 {
 	std::string token, line, key;
 	std::string buff;
+	size_t pos = _request.find("\r\n\r\n");
 
-	std::cout << "token = " << token << std::endl;
 	while (ss >> token)
 	{
 		// std::cout << "Token = " << token << std::endl;
@@ -177,33 +170,36 @@ void Requete::make_POST(std::stringstream& ss)
 		{
 			_boundary = token.substr(token.find("boundary=") + 9);
 		}
-		else if (token == "Content-Length:")
+		if (token == "Content-Length:")
 		{
+			if (!key.empty() && !line.empty() && key != token)
+			{
+				line.pop_back();//remove space 
+				_header.insert(std::pair<std::string, std::string>(key, line));
+				line.clear();
+			}
 			key = token;
 			ss >> token;
 			_header.insert(std::pair<std::string, std::string>(key, token));
 			_len = atoi(token.c_str());
 			key.clear();
 		}
-		else if (!_boundary.empty() && token.find(_boundary) != std::string::npos) //begin of body
+		else if (_request.find(token) == pos - token.length())
 		{
-			// std::cout << "Request len = " << _request.size() << std::endl;
-			// std::cout << "BODY    len = " << _len << std::endl;
-			// if (_request.size() > _len)//images
-			// {
-			// 	_full_body = _request.substr(_request.size() - _len);
-			// 	//make_body_inputs(ss, token);
-			// }
-			// else
-			// {
-			// 	_full_body = _request.substr(_request.size());
-			// }
-			// std::cout << "Full Body = " << std::endl << _full_body << std::endl;
-			// std::cout << "END Body" << std::endl;
-			//make_body(ss, token);
+			pos += 4;
+			if (!key.empty() && !line.empty() && key != token)
+			{
+				line.pop_back();//remove space 
+				_header.insert(std::pair<std::string, std::string>(key, line));
+			}
+			while (_request[pos])
+			{
+				_full_body += _request[pos];
+				pos++;
+			}
 			break;
 		}
-		if (token.back() == ':')
+		else if (token.back() == ':')
 		{
 			if (!key.empty() && key != token)
 			{
@@ -223,28 +219,9 @@ void Requete::make_POST(std::stringstream& ss)
 	}
 	std::cout << "Request len = " << _request.size() << std::endl;
 	std::cout << "BODY    len = " << _len << std::endl;
-	// for (size_t i = 0; i < count; i++)
-	// {
-	// 	/* code */
-	// }
-	
-	if (_request.size() > _len)//images
-	{
-		_full_body = _request.substr(_request.size() - _len);
-		//make_body_inputs(ss, token);
-	}
-	else
-	{
-		_full_body = _request.substr(_request.size() - 1);
-	}
 	std::cout << "_full_body len = " << _full_body.length() << std::endl;
 	std::cout << "Full Body = " << std::endl << _full_body << std::endl;
 	std::cout << "END Body" << std::endl;
-	if (!line.empty() && !key.empty())
-	{
-		line.pop_back();
-		_header.insert(std::pair<std::string, std::string>(key, line));
-	}
 	make_full_body();
 }
 
@@ -278,6 +255,7 @@ void Requete::make_GET(std::stringstream& ss)
 		line.pop_back();
 		_header.insert(std::pair<std::string, std::string>(key, line));
 	}
+	
 }
 
 /* Makes query for lxu-wu */
