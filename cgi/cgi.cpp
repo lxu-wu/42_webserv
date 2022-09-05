@@ -36,7 +36,6 @@ std::string searchExec(std::string filePwd, char **envp)
 void newEnv(std::string filePwd, char **envp, Requete &req, std::vector<std::string> &my_env)
 {
     (void)req;
-    (void)filePwd;
     size_t  i = 0;
 
     while (envp[i])
@@ -51,13 +50,24 @@ void newEnv(std::string filePwd, char **envp, Requete &req, std::vector<std::str
     my_env.push_back("CONTENT_TYPE=" + req.getHeader()["Content-Type"]);
     // my_env.push_back("CONTENT_TYPE=multipart/form-data; boundary=----WebKitFormBoundaryjmfNuyB4hX5Q2aW");
     my_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
-    // my_env.push_back("PATH_TRANSLATED=" + req.getPath());
-    // my_env.push_back("PATH_TRANSLATED=/Users/lxu-wu/Desktop/42_webserv/upload.py");
+    {
+        char path[124] = {0};
+        my_env.push_back("PATH_TRANSLATED=" + std::string(getcwd(path, 124)));
+        // my_env.push_back("PATH_TRANSLATED=/Users/lxu-wu/Desktop/42_webserv/upload.py");
+    }
     my_env.push_back("QUERY_STRING=" + req.getQuery());//getQS pour querry string
     // my_env.push_back("QUERY_STRING=file1=README.md&");
     my_env.push_back("REMOTE_ADDR=127.0.0.1");
-    my_env.push_back("REQUEST_METHOD=" + req.getMethod());
-    // my_env.push_back("REQUEST_METHOD=POST");
+   
+    {
+        std::string str;
+
+        for (std::string::iterator it = req.getMethod().begin(); it != req.getMethod().end(); it++)
+            str.push_back(toupper(*it));
+        my_env.push_back("REQUEST_METHOD=" + str);
+        // my_env.push_back("REQUEST_METHOD=POST");
+    }
+   
     my_env.push_back("CONTENT_LENGTH=" + std::to_string(req.getLen()));
     // my_env.push_back("CONTENT_LENGTH=246");
     my_env.push_back("SERVER_SOFTWARE=" + req.getProtocol());
@@ -66,7 +76,7 @@ void newEnv(std::string filePwd, char **envp, Requete &req, std::vector<std::str
     // my_env.push_back("HTTP_ACCEPT=application/octet-stream");
     my_env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.getHeader()["Accept-Language"]);
     my_env.push_back("HTTP_USER_AGENT=" + req.getHeader()["User-Agent"]);
-    my_env.push_back("SCRIPT_NAME=" + filePwd);
+    my_env.push_back("SCRIPT_NAME=" + req.getUrl());
     // my_env.push_back("SCRIPT_NAME=upload.py");
 }
 
@@ -92,7 +102,7 @@ char **vecToTab(std::vector<std::string> &vec)
 
 std::string execCGI(std::string filePwd, char **envp, Requete &req)
 {
-    filePwd = "./upload.py"; // a enlever quand john m envoie tout le path
+    // filePwd = "./upload.py"; // a enlever quand john m envoie tout le path
     std::string execPwd = searchExec(filePwd, envp);
     if (execPwd == "")
     {
