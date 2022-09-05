@@ -7,7 +7,7 @@ void Server::initServer()
     for(size_t i = 0; i < servers.size(); i++)
     {
         Socket socket;
-        socket.setup((char *)(servers[i]->getListen().c_str()));
+        socket.setup(stoi(servers[i]->getListen()));
         sockets.push_back(socket);
     }
 	errors.insert(std::make_pair(200, "200 OK"));

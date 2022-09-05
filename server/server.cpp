@@ -101,7 +101,6 @@ void Server::acceptClient()
     }
 }
 
-#define MAX_REQUEST_SIZE 2048
 
 
 void Server::handleRequest()
@@ -141,13 +140,13 @@ void Server::handleRequest()
             else if(is_request_done(clients[i].request))
             {
                 Requete requete(clients[i].request);
-                if(requete.err != -1)
-                {
-                    showError(requete.err, clients[i]);
-                    if(kill_client(clients[i], requete))
-                        i--;
-                    continue;       
-                }
+                // if(requete.err != -1)
+                // {
+                //     showError(requete.err, clients[i]);
+                //     if(kill_client(clients[i], requete))
+                //         i--;
+                //     continue;       
+                // }
                 int ret = -1;
                 if ((ret = requete.check_tim()) != -1)
                 {

@@ -27,8 +27,6 @@
 #include "../cgi/cgi.hpp"
 #include "socket.hpp"
 
-#define MAX_REQUEST 2048
-
 class Server
 {
     public :

@@ -7,6 +7,7 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 
+#define MAX_REQUEST_SIZE 65536
 
 class Client
 {
@@ -34,7 +35,7 @@ class Client
         void init(int i);
 
         int requestSize;
-        char request[2048 + 1];
+        char request[MAX_REQUEST_SIZE + 1];
         size_t last_time;
 
     private :
