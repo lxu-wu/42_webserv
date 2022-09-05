@@ -16,12 +16,12 @@ void deleteallfd(Server serv)
     std::cout << colors::green << "Clean All Fd" << std::endl;
 }
 
-void sig_handler(int signal)
-{
-    (void)signal;
-    deleteallfd(serv);
-    exit(0);
-}
+// void sig_handler(int signal)
+// {
+//     (void)signal;
+//     deleteallfd(serv);
+//     exit(0);
+// }
 
 int main(int ac, char **av, char **envp)
 {
@@ -38,7 +38,7 @@ int main(int ac, char **av, char **envp)
     serv.servers = data.getServers();
     serv.envp = envp;
     serv.initServer();
-    signal(SIGINT, sig_handler);
+    // signal(SIGINT, sig_handler);
     while(1)
     {
         serv.waitClient();

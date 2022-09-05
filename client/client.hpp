@@ -15,8 +15,8 @@ class Client
             clientSocket = sock;
 
             fcntl(clientSocket, F_SETFL, O_NONBLOCK);
-            if(setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, NULL, 0) < 0)
-                return ;
+            // if(setsockopt(clientSocket, SOL_SOCKET, SO_RCVTIMEO, NULL, 0) < 0)
+            //     return ;
             
         }
         int getClientSocket() { return clientSocket; }
@@ -34,7 +34,7 @@ class Client
         void init(int i);
 
         int requestSize;
-        char request[65537];
+        char request[2048 + 1];
         size_t last_time;
 
     private :

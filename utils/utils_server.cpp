@@ -7,7 +7,7 @@ void Server::initServer()
     for(size_t i = 0; i < servers.size(); i++)
     {
         Socket socket;
-        socket.setup(stoi(servers[i]->getListen()));
+        socket.setup((char *)(servers[i]->getListen().c_str()));
         sockets.push_back(socket);
     }
 	errors.insert(std::make_pair(200, "200 OK"));
@@ -58,6 +58,22 @@ void Server::showError(int err, Client &client)
 bool Server::kill_client(Client client, Requete req)
 {
     (void)req;
+    // if(req.getHeader().find("keep-alive") != req.getHeader().end())
+    //     return false;
+    close(client.getClientSocket());
+    for(size_t i = 0; i < clients.size(); i++)
+    {
+        if(clients[i].getClientSocket() == client.getClientSocket())
+        {
+            clients.erase(clients.begin() + i);
+            return true;
+        }
+    }
+    exit(1);
+}
+
+bool Server::kill_client(Client client)
+{
     // if(req.getHeader().find("keep-alive") != req.getHeader().end())
     //     return false;
     close(client.getClientSocket());

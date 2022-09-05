@@ -43,6 +43,9 @@ class Server
         void rep_listing(int socket, std::string path, std::string fullurl);
         bool is_cgi(std::string filename);
         bool is_timeout(Client client);
+        bool kill_client(Client client);
+        void addtowait(int socket, fd_set *set);
+        void selectfd(fd_set *read, fd_set *write);
 
 
         std::string getRootPatch(std::string url, int i);

@@ -7,24 +7,74 @@
 // + Add parse url of req and root
 //
 
+
+bool is_request_done(char *request)
+{
+	char *body = strstr(request, "\r\n\r\n");
+	if (!body)
+		return false;
+	body += 4;
+	if (strnstr(request, "chunked", strlen(request) - strlen(body)))
+	{
+		if (strstr(body, "\r\n\r\n"))
+			return true;
+		return false;
+	}
+	else if (strnstr(request, "Content-Length", strlen(request) - strlen(body)))
+	{
+		if (strstr(body, "\r\n\r\n"))
+			return true;
+		char *start = strnstr(request, "Content-Length: ", strlen(request) - strlen(body)) + 16;
+		char *end = strstr(start, "\r\n");
+		char *len = strndup(start, end - start);
+		free(len);
+		int len_i = atoi(len);
+		if ((size_t)len_i <= strlen(body))
+			return true;
+		return false;
+	}
+	else if (strnstr(request, "boundary=", strlen(request) - strlen(body)))
+	{
+		if (strstr(body, "\r\n\r\n"))
+			return true;
+		return false;
+	}
+	return true;
+}
+
+void Server::addtowait(int socket, fd_set *set)
+{
+    FD_SET(socket, set);
+    if(socket > max_fd)
+        max_fd = socket;
+}
+
+void Server::selectfd(fd_set *read, fd_set *write)
+{
+    int r = 0;
+    if((r = select(max_fd + 1, read, write, 0, 0)) < 0)
+        exit(-1);
+    else if (r == 0)
+        std::cout << "Select time out" << std::endl;
+    writeSet = *write;
+    readSet = *read;
+    std::cout << max_fd << "|  " << &readSet <<  "| " << &writeSet << std::endl;
+}
+
+
 void Server::waitClient()
 {
-    FD_ZERO(&readSet);
-    FD_ZERO(&writeSet);
+    fd_set read;
+    fd_set write;
+
+    FD_ZERO(&read);
+    FD_ZERO(&write);
     for(size_t i = 0; i < sockets.size(); i++) // Set fd of server
-    {
-        FD_SET(sockets[i].getServerSocket(), &readSet);
-        if(sockets[i].getServerSocket() > max_fd)
-            max_fd = sockets[i].getServerSocket();
-    }
+        addtowait(sockets[i].getServerSocket(), &read);
     for(size_t i = 0; i < clients.size(); i++) // Set fd of server
-    {
-        FD_SET(clients[i].getClientSocket(), &readSet);
-        if(clients[i].getClientSocket() > max_fd)
-            max_fd = clients[i].getClientSocket();
-    }
-    if(select(max_fd + 1, &readSet, &writeSet, 0, 0) < 0)
-        exit(-1);
+        addtowait(clients[i].getClientSocket(), &read);
+    selectfd(&read, &write);
+
 }
 
 
@@ -41,7 +91,7 @@ void Server::acceptClient()
             client.init(i);
             client.setSocketClient(accept(sockets[i].getServerSocket(), (struct sockaddr *)&addrclient, &clientSize));
             clients.push_back(client);
-            if(sockets[i].getServerSocket() < 0)
+            if(client.getClientSocket() < 0)
             {
                 perror("Connect");
                 exit(-1);
@@ -51,7 +101,7 @@ void Server::acceptClient()
     }
 }
 
-
+#define MAX_REQUEST_SIZE 2048
 
 
 void Server::handleRequest()
@@ -62,31 +112,16 @@ void Server::handleRequest()
         {
             std::cout << colors::bright_cyan << "New Request ! : ";
 
-            int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, 65536, 0);
+            int Reqsize = recv(clients[i].getClientSocket(),
+                clients[i].request + clients[i].requestSize,
+                    MAX_REQUEST_SIZE - clients[i].requestSize, 0);
 
-            std::cout << clients[i].request  << std::endl;
-            
+            std::cout << Reqsize  << std::endl;
             clients[i].requestSize += Reqsize;
-            Requete requete(clients[i].request);
-            if(requete.err != -1)
-            {
-                showError(requete.err, clients[i]);
-                if(kill_client(clients[i], requete))
-                    i--;
-                continue;       
-            }
-            int ret = -1;
-            if ((ret = requete.check_tim()) != -1)
-            {
-                showError(ret, clients[i]);
-                if(kill_client(clients[i], requete))
-                    i--;
-                continue;       
-            }
-            if(clients[i].requestSize - requete.getLen() > MAX_REQUEST)
+            if(clients[i].requestSize > MAX_REQUEST_SIZE)
             {
                 showError(413, clients[i]);
-                if(kill_client(clients[i], requete))
+                if(kill_client(clients[i]))
                     i--;
                 continue;
             }
@@ -94,17 +129,34 @@ void Server::handleRequest()
             {
                 std::cout << "Recv failed !" << std::endl;
                 showError(500, clients[i]);
-                kill_client(clients[i], requete);
+                kill_client(clients[i]);
                 i--;
             }
             else if(Reqsize == 0)
             {
                 std::cout << colors::on_bright_red << "Connection is closed !" << std::endl;
-                kill_client(clients[i], requete);
+                kill_client(clients[i]);
                 i--;
             }
-            else
+            else if(is_request_done(clients[i].request))
             {
+                Requete requete(clients[i].request);
+                if(requete.err != -1)
+                {
+                    showError(requete.err, clients[i]);
+                    if(kill_client(clients[i], requete))
+                        i--;
+                    continue;       
+                }
+                int ret = -1;
+                if ((ret = requete.check_tim()) != -1)
+                {
+                    showError(ret, clients[i]);
+                    if(kill_client(clients[i], requete))
+                        i--;
+                    continue;       
+                }
+
                 if(requete.getLen() != std::string::npos && requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
                     std::cout << "Body too large " << requete.getMethod() << " !" << std::endl;
@@ -132,19 +184,22 @@ void Server::handleRequest()
                     rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
                     send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
                 }
+                else
+                {
+                    if (requete.getMethod() == "GET")
+                        getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
+                    else if (requete.getMethod() == "POST")
+                        postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()), requete);
+                    else if (requete.getMethod() == "DELETE")
+                        deleteMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
+                }
                 // else if (clients[i].is_timeout())
                 //     showError(408, clients[i]);
-                else if (requete.getMethod() == "GET")
-                    getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
-                else if (requete.getMethod() == "POST")
-                    postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()), requete);
-                else if (requete.getMethod() == "DELETE")
-                    deleteMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
+                if(kill_client(clients[i]))
+                    i--;
+                clients[i].requestSize = 0;
+                bzero(clients[i].request, MAX_REQUEST_SIZE);
             }
-            if(kill_client(clients[i], requete))
-                i--;
-            clients[i].requestSize = 0;
-            bzero(clients[i].request, 65537);
         }
     }
     usleep(500);

@@ -5,6 +5,6 @@ void Client::init(int i)
 {
     last_time = 0;
     n_server = i;
-    bzero(request, 65537);
+    bzero(request, 2048 + 1);
     requestSize = 0;
 }
