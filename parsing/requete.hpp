@@ -20,6 +20,13 @@
 # include <string>
 
 /* 
+- find("\r\n\r\n")
+-Notes space are corect + /r/n/r/n
+- Parsing: only one error.html per line
+- Parsing: check if index is in locations + hmtl 
+*/
+
+/* 
 ------WebKitFormBoundaryfBeADaUzEeiKFQHq
 Content-Disposition: form-data; name="file1"; filename=""
 Content-Type: application/octet-stream
@@ -60,7 +67,6 @@ class Requete
 		void make_full_body();
 
 
-		int									err;//err of parsing to show
 	protected:
 		std::string							_method;// Method from Header
 		std::string							_url;//URL from Header
