@@ -68,8 +68,14 @@ void Server::handleRequest()
             
             clients[i].requestSize += Reqsize;
             Requete requete(clients[i].request);
-            if (!requete.check_tim())
-                throw RequestErr();
+            int ret = -1;
+            if ((ret = requete.check_tim()) != -1)
+            {
+                showError(ret, clients[i]);
+                if(kill_client(clients[i], requete))
+                    i--;
+                continue;       
+            }
 
             std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
             std::cout << colors::grey << clients[i].request << std::endl;

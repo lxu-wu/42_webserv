@@ -38,13 +38,13 @@ Requete::Requete(std::string requete)
 }
 
 /* Check if request is good */
-bool Requete::check_tim()
+int Requete::check_tim()
 {
 	if (_method != "POST" && _method != "GET" && _method != "DELETE")
-		return false;
+		return 405;
 	if (_protocol != "HTTP/1.1")
-		return false;
-	return true;
+		return 505;
+	return -1;
 }
 
 /* check if content start */

@@ -51,7 +51,7 @@ class Requete
 		std::map<std::string, std::string>	getText() const		{return _text;};
 
 		/* Functions */
-		bool check_tim();
+		int check_tim();
 		void make_body(std::stringstream& ss, std::string token);
 		void make_body_inputs(std::stringstream& ss, std::string token);
 		void make_query();
