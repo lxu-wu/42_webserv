@@ -14,10 +14,14 @@
 
 Requete::Requete(std::string requete)
 {
+	err = -1;
 	std::cout << std::endl << "Before check " << std::endl;
+	int flsize;
+	for(flsize = 0; requete[flsize] && requete[flsize] != '\n'; flsize++);
+	std::cout << flsize << std::endl;
 	std::stringstream ss(requete);
 	_request = requete;
-	_len = 0;
+	_len = std::string::npos;
     ss >> this->_method;
     ss >> this->_url;
 	ss >> this->_protocol;
@@ -40,6 +44,8 @@ Requete::Requete(std::string requete)
 /* Check if request is good */
 int Requete::check_tim()
 {
+	if (_protocol.empty() || _protocol.empty())
+		return 400;
 	if (_method != "POST" && _method != "GET" && _method != "DELETE")
 		return 405;
 	if (_protocol != "HTTP/1.1")

@@ -61,6 +61,7 @@ class Requete
 
 
 	protected:
+		int									err;//err of parsing to show
 		std::string							_method;// Method from Header
 		std::string							_url;//URL from Header
 		std::string							_protocol;//Protocol from Header

@@ -42,8 +42,8 @@ void Server::showError(int err, Client &client)
         std::map<int , std::string>::iterator it = errors.find(err);
         if(it != errors.end())
         {
-            std::cout << colors::on_bright_red << "Show error : " << it->first << " : " << it->second << " !" << colors::on_grey << std::endl;
-            std::string msg = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
+            std::cout << colors::on_bright_red << "Show error : " << it->second << " !" << colors::on_grey << std::endl;
+            std::string msg = "HTTP/1.1 " + it->second + "\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
             int sendret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
             if(sendret < 0)
                 std::cout << "Client disconnected" << std::endl;

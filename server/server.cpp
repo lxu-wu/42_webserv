@@ -64,7 +64,7 @@ void Server::handleRequest()
 
             int Reqsize = recv(clients[i].getClientSocket() , clients[i].request + clients[i].requestSize, 65536, 0);
 
-            std::cout << Reqsize << std::endl;
+            std::cout << clients[i].request  << std::endl;
             
             clients[i].requestSize += Reqsize;
             Requete requete(clients[i].request);
@@ -76,10 +76,6 @@ void Server::handleRequest()
                     i--;
                 continue;       
             }
-
-            std::cout << colors::yellow << requete.getMethod() << " " << requete.getUrl() << std::endl;
-            std::cout << colors::grey << clients[i].request << std::endl;
-
             if(clients[i].requestSize - requete.getLen() > MAX_REQUEST)
             {
                 showError(413, clients[i]);
@@ -102,9 +98,9 @@ void Server::handleRequest()
             }
             else
             {
-                if(requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
+                if(requete.getLen() != std::string::npos && requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
-                    std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
+                    std::cout << "Body too large " << requete.getMethod() << " !" << std::endl;
                     showError(413, clients[i]);
                     if(kill_client(clients[i], requete))
                         i--;
