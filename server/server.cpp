@@ -68,6 +68,13 @@ void Server::handleRequest()
             
             clients[i].requestSize += Reqsize;
             Requete requete(clients[i].request);
+            if(requete.err != -1)
+            {
+                showError(requete.err, clients[i]);
+                if(kill_client(clients[i], requete))
+                    i--;
+                continue;       
+            }
             int ret = -1;
             if ((ret = requete.check_tim()) != -1)
             {

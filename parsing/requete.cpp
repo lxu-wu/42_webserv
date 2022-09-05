@@ -18,11 +18,12 @@ Requete::Requete(std::string requete)
 	std::cout << std::endl << "Before check " << std::endl;
 	int flsize;
 	for(flsize = 0; requete[flsize] && requete[flsize] != '\n'; flsize++);
-	std::cout << flsize << std::endl;
 	std::stringstream ss(requete);
 	_request = requete;
 	_len = std::string::npos;
     ss >> this->_method;
+	if((_method == "POST" && flsize != 16) || (_method == "GET" && flsize != 15))
+		err = 400;
     ss >> this->_url;
 	ss >> this->_protocol;
 	make_query();

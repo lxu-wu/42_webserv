@@ -60,8 +60,8 @@ class Requete
 		void make_full_body();
 
 
-	protected:
 		int									err;//err of parsing to show
+	protected:
 		std::string							_method;// Method from Header
 		std::string							_url;//URL from Header
 		std::string							_protocol;//Protocol from Header
