@@ -143,11 +143,15 @@ void Requete::make_POST(std::stringstream& ss)
 				_header.insert(std::pair<std::string, std::string>(key, line));
 			}
 			//make_body(ss, token);
-			while (_request[pos])// || _request[pos + 1]
+			while (pos < _len)// || _request[pos + 1]
 			{
+				//std::cout << "request = " <<_request[pos] << std::endl;
+				//usleep(90000);
 				_full_body += _request[pos];
 				pos++;
 			}
+			// std::cout << "Full Body = " << std::endl << _full_body << std::endl;
+			// sleep(15);
 			break;
 		}
 		else if (token.back() == ':')

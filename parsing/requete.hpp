@@ -18,6 +18,7 @@
 # include <map>
 # include <iterator>
 # include <string>
+# include <unistd.h>
 
 /* 
 - find("\r\n\r\n")
