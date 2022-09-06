@@ -60,19 +60,7 @@ void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env)
     // my_env.push_back("QUERY_STRING=file1=README.md&");
     my_env.push_back("REMOTE_ADDR=127.0.0.1");
    
-    {
-        std::string str;
-        std::string tab[] = {"post", "get", "delete"};
-
-        if (req.getMethod() == "post")
-            my_env.push_back("REQUEST_METHOD=POST");
-        else if (req.getMethod() == "get")
-            my_env.push_back("REQUEST_METHOD=GET");
-        else if (req.getMethod() == "delete")
-            my_env.push_back("REQUEST_METHOD=DELETE");
-            
-        // my_env.push_back("REQUEST_METHOD=POST");
-    }
+    my_env.push_back("REQUEST_METHOD=" + req.getMethod());
    
     my_env.push_back("CONTENT_LENGTH=" + std::to_string(req.getLen()));
     // my_env.push_back("CONTENT_LENGTH=246");
@@ -183,9 +171,9 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
             perror("dup2");
             exit(1);
         }
-        if (!req.getBody().empty())
+        if (!req.getFullBody().empty())
         {
-            write(fd_in[1], req.getBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
+            write(fd_in[1], req.getFullBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
         }
         // write(fd_in[1], req.getBody().c_str(), 246);
         // write(fd_in[1], "------WebKitFormBoundaryjmfNuyB4hX5Q2aW\nContent-Disposition: form-data; name=\"file1\"; filename=\"README.md\"\nContent-Type: application/octet-stream\n\n# 42_webserv\nON VA LE FAIRE TODAY I FINISH CGI\n------WebKitFormBoundaryjmfNuyB4hX5Q2aW--\n", 236);
