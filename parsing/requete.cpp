@@ -154,7 +154,8 @@ void Requete::make_POST(std::stringstream& ss)
 		{
 			if (!key.empty() && key != token)
 			{
-				line.pop_back();
+				if (line.back() == ' ')
+					line.pop_back();
 				_header.insert(std::pair<std::string, std::string>(key, line));
 			}
 			token.pop_back();
@@ -187,7 +188,8 @@ void Requete::make_GET(std::stringstream& ss)
 		{
 			if (!key.empty() && key != token)
 			{
-				line.pop_back();
+				if (line.back() == ' ')
+					line.pop_back();
 				_header.insert(std::pair<std::string, std::string>(key, line));
 			}
 			token.pop_back();
@@ -203,7 +205,8 @@ void Requete::make_GET(std::stringstream& ss)
 	}
 	if (!line.empty() && !key.empty())
 	{
-		line.pop_back();
+		if (line.back() == ' ')
+			line.pop_back();
 		_header.insert(std::pair<std::string, std::string>(key, line));
 	}
 	
