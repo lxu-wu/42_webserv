@@ -186,7 +186,7 @@ void Requete::make_GET(std::stringstream& ss)
 	{
 		if (token.back() == ':')
 		{
-			if (!key.empty() && key != token)
+			if (!key.empty() && !line.empty() && key != token)
 			{
 				if (line.back() == ' ')
 					line.pop_back();
