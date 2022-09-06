@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:12 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/31 14:47:54 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/06 13:36:13 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ void Conf::check_data()
 			throw MethWrong();
 		if (!_servers[i]->check_root())
 			throw RootErr();
+		if (!_servers[i]->check_index())
+			throw IndexLoc();
 	}
 	
 }
@@ -213,7 +215,7 @@ void Conf::stock_server(std::string line, Servers* server)
 
 		while (ss >> token)
 		{
-			if (token != last && token != word)
+			if (line.find(token) != line.rfind(last) && token != word)
     			server->setError(token, last);
 		}
 	}

@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/31 15:09:37 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/06 13:19:44 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,7 @@ class Servers
 		bool check_method();
 		bool check_error_page();
 		bool check_root();
+		bool check_index();
 
 	private:
 		std::string							_listen;
@@ -164,5 +165,6 @@ class ErrorPage : EXCEPTION {WHAT throw () { return ("Error: Error page is wrong
 class DirTwice : EXCEPTION {WHAT throw () { return ("Error: Two times the same directive"); }};
 class RequestErr : EXCEPTION {WHAT throw () { return ("Error: Request method wrong"); }};
 class RootErr : EXCEPTION {WHAT throw () { return ("Error: In root path"); }};
+class IndexLoc : EXCEPTION {WHAT throw () { return ("Error: Missing index in location"); }};
 
 #endif

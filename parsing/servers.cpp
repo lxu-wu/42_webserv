@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:15 by tmartial          #+#    #+#             */
-/*   Updated: 2022/08/31 14:48:12 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/06 14:00:12 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,18 @@ Servers::~Servers()
 }
 
 /* Functions */
+/* check if all locations have index*/
+bool Servers::check_index()
+{
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		if (_locations[i]->getIndex().empty())
+			return false;
+		else if (_locations[i]->getIndex().find(".html") == std::string::npos)
+			return false;
+	}
+	return true;
+}
 
 /* Check methods are correct in one server and it locations */
 bool Servers::check_method()
@@ -55,6 +67,7 @@ bool Servers::check_error_page()
 	std::map<std::string, std::string>::iterator it_end = _error.end();
 	while (it != it_end)
 	{
+		// std::cout << "it = " << it->first << std::endl;
 		if (!my_atoi(it->first) || (it->second).find(".html") == std::string::npos)
 			return false;
 		it++;

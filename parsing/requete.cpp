@@ -47,61 +47,9 @@ int Requete::check_tim()
 	return -1;
 }
 
+
 /* check if content start */
 void Requete::make_body(std::stringstream& ss, std::string token)
-{
-	std::string temp, save;
-
-	while (!token.empty())
-	{
-		if (!(ss >> token))//Content-Disposition:
-			break;
-		ss >> token;//form-data;
-		ss >> token;//name="file1";
-		_name = token.substr(token.find("\""));
-		_name.pop_back();//;
-		_name.pop_back();//"
-		ss >> token;
-		
-		if (token.find("filename=") == std::string::npos)
-		{
-			std::cout << "Before full " << std::endl;
-			while (!token.empty() && token.find(_boundary) == std::string::npos)
-			{
-				temp += token;
-				temp += " ";
-				ss >> token;
-			}
-			_text.insert(std::pair<std::string, std::string>(_name, temp));
-			_body += temp;
-			temp.clear();
-		}
-		else
-		{
-			std::cout << "Before full " << std::endl;
-			_file_name = token.substr(token.find('"'));
-			_file_name.pop_back();//"
-			ss >> token;//Content-Type:
-			ss >> token;
-			_type = token;
-			ss >> token;
-			while (!token.empty() && token.find(_boundary) == std::string::npos)
-			{
-				temp += token;
-				temp += " ";
-				save = token;
-				ss >> token;
-				if (save == token)
-					break;
-			}
-			_body += temp;
-			temp.clear();
-		}
-	}
-}
-
-/* check if content start */
-void Requete::make_body_inputs(std::stringstream& ss, std::string token)
 {
 	std::string temp, save;
 
@@ -174,7 +122,8 @@ void Requete::make_POST(std::stringstream& ss)
 		{
 			if (!key.empty() && !line.empty() && key != token)
 			{
-				line.pop_back();//remove space 
+				if (line.back() == ' ')
+					line.pop_back();//remove space 
 				_header.insert(std::pair<std::string, std::string>(key, line));
 				line.clear();
 			}
@@ -189,10 +138,12 @@ void Requete::make_POST(std::stringstream& ss)
 			pos += 4;
 			if (!key.empty() && !line.empty() && key != token)
 			{
-				line.pop_back();//remove space 
+				if (line.back() == ' ')
+					line.pop_back();//remove space 
 				_header.insert(std::pair<std::string, std::string>(key, line));
 			}
-			while (_request[pos])
+			//make_body(ss, token);
+			while (_request[pos])// || _request[pos + 1]
 			{
 				_full_body += _request[pos];
 				pos++;
@@ -272,4 +223,16 @@ void Requete::make_full_body()
 	//std::cout << "request len = " << _request.length() << std::endl;
 	//std::cout << "len = " << _len << std::endl;
 	//_full_body = _request.substr(_request.length() - _len);
+}
+
+/* Print all data in requete */
+void Requete::print_all_data()
+{
+	std::cout << "Method = " << _method << std::endl;
+	std::cout << "Url    = " << _url << std::endl;
+	std::cout << "Protocol = " << _protocol << std::endl;
+	std::cout << "Boundary = " << _boundary << std::endl;
+	std::cout << "Name = " << _name << std::endl;
+	std::cout << "Filename = " << _file_name << std::endl;
+	std::cout << "Type = " << _type << std::endl;
 }

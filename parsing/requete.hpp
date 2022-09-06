@@ -21,9 +21,7 @@
 
 /* 
 - find("\r\n\r\n")
--Notes space are corect + /r/n/r/n
-- Parsing: only one error.html per line
-- Parsing: check if index is in locations + hmtl 
+- Notes space are corect + /r/n/r/n
 */
 
 /* 
@@ -33,6 +31,14 @@ Content-Type: application/octet-stream
 
 
 ------WebKitFormBoundaryfBeADaUzEeiKFQHq--
+*/
+
+/* 
+------WebKitFormBoundarydjR69jSXKf1yW666
+Content-Disposition: form-data; name="firstname"
+
+kuy
+------WebKitFormBoundarydjR69jSXKf1yW666
 */
 
 class Requete
@@ -65,6 +71,7 @@ class Requete
 		void make_GET(std::stringstream& ss);
 		void make_POST(std::stringstream& ss);
 		void make_full_body();
+		void print_all_data();
 
 
 	protected:
