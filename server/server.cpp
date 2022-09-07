@@ -207,8 +207,11 @@ void Server::handleRequest()
                 }
                 if(kill_client(clients[i], requete))
                     i--;
-                clients[i].requestSize = 0;
-                bzero(clients[i].request, MAX_REQUEST_SIZE);
+                if(i <= 0)
+                {
+                    clients[i].requestSize = 0;
+                    bzero(clients[i].request, MAX_REQUEST_SIZE);
+                }
             }
         }
     }
@@ -306,6 +309,7 @@ void Server::postMethod(Client client, std::string url, Requete req)
         if(req.getHeader().find("Content-Type") != req.getHeader().end() && req.getHeader()["Content-Type"].find("boundary=") != std::string::npos)
         {
             std::cout << "Upload in directory" << std::endl;
+            std::cout << req.getText().find("name")->second << std::endl;
             // for(int i = 0; i < )
             // {
 
