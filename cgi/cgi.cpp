@@ -30,7 +30,7 @@ std::string searchExec(std::string filePwd, char **envp)
 
     if (!access(exec.c_str(), X_OK))
         return exec;
-    return (0);
+    return ("");
 }
 
 void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env)
