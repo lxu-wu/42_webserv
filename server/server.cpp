@@ -160,7 +160,6 @@ void Server::handleRequest()
 
                 if(requete.getLen() != std::string::npos && requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
-                    std::cout << "Body too large " << requete.getMethod() << " !" << std::endl;
                     showError(413, clients[i]);
                     if(kill_client(clients[i], requete))
                         i--;
@@ -181,7 +180,9 @@ void Server::handleRequest()
                 if (is_cgi(requete.getUrl()))
                 {
                     std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
-                    std::string rescgi = execCGI(requete.getUrl(), envp, requete);
+
+                    std::string urlsend = getRootPatch(urlrcv, clients[i].getNServer());
+                    std::string rescgi = execCGI(urlsend, envp, requete);
                     if(rescgi.empty())
                         showError(404, clients[i]);
 
