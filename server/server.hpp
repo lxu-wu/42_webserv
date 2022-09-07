@@ -38,7 +38,7 @@ class Server
         void showError(int err, Client &client);
         bool kill_client(Client client, Requete req);
         bool is_allowed(std::vector<std::string> methodlist, std::string methodreq); // say if a method is allowed
-        void rep_listing(int socket, std::string path, std::string fullurl);
+        void rep_listing(int socket, std::string path, std::string fullurl, Client client);
         bool is_cgi(std::string filename);
         bool is_timeout(Client client);
         bool kill_client(Client client);

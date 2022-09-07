@@ -187,7 +187,11 @@ void Server::handleRequest()
 
                     std::cout << rescgi << std::endl;
                     rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
-                    send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
+                    int r = send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
+                    if(r < 0)
+                        showError(500, clients[i]);
+                    else if (r == 0)
+                        showError(400, clients[i]);
                 }
                 else
                 {
@@ -251,7 +255,7 @@ void Server::getMethod(Client &client, std::string urlrcv)
             if(strcmp(urlrcv.c_str(), "/") == 0)
                 showPage(client, urlsend + servers[client.getNServer()]->getIndex(), 200);
             else
-                rep_listing(client.getClientSocket(), urlrcv, urlsend);
+                rep_listing(client.getClientSocket(), urlrcv, urlsend, client);
         }
         else
             showPage(client, urlsend, 200);

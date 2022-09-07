@@ -188,7 +188,7 @@ void Server::showPage(Client client, std::string dir, int code)
         showError(400, client);
 }
 
-void Server::rep_listing(int socket, std::string path, std::string fullurl)
+void Server::rep_listing(int socket, std::string path, std::string fullurl, Client client)
 {
     std::cout << colors::on_cyan << "Show Repository Listing" << colors::on_grey << std::endl;
 
@@ -213,7 +213,12 @@ void Server::rep_listing(int socket, std::string path, std::string fullurl)
         return ;
     }
     tosend += "</pre>\n</body>\n</html>\n";
-    send(socket , tosend.c_str(), tosend.size(), 0);
+    int r = send(socket , tosend.c_str(), tosend.size(), 0);
+    if(r < 0)
+        showError(500, client);
+    else if (r == 0)
+        showError(400, client);
+     
 }
 
 bool Server::writewithpoll(std::string url, Client client, Requete req)
