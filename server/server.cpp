@@ -27,8 +27,8 @@ bool is_request_done(char *request)
 		char *start = strnstr(request, "Content-Length: ", strlen(request) - strlen(body)) + 16;
 		char *end = strstr(start, "\r\n");
 		char *len = strndup(start, end - start);
-		free(len);
 		int len_i = atoi(len);
+		free(len);
 		if ((size_t)len_i <= strlen(body))
 			return true;
 		return false;
@@ -58,7 +58,6 @@ void Server::selectfd(fd_set *read, fd_set *write)
         std::cout << "Select time out" << std::endl;
     writeSet = *write;
     readSet = *read;
-    std::cout << max_fd << "|  " << &readSet <<  "| " << &writeSet << std::endl;
 }
 
 
@@ -115,8 +114,9 @@ void Server::handleRequest()
                 clients[i].request + clients[i].requestSize,
                     MAX_REQUEST_SIZE - clients[i].requestSize, 0);
 
-            std::cout << Reqsize  << std::endl;
             clients[i].requestSize += Reqsize;
+            std::cout << clients[i].request << std::endl;
+
             if(clients[i].requestSize > MAX_REQUEST_SIZE)
             {
                 showError(413, clients[i]);
@@ -155,6 +155,8 @@ void Server::handleRequest()
                         i--;
                     continue;       
                 }
+                std::string urlrcv = requete.getUrl();
+
 
                 if(requete.getLen() != std::string::npos && requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
@@ -164,7 +166,11 @@ void Server::handleRequest()
                         i--;
                     continue;
                 }
-                if(!is_allowed(servers[clients[i].getNServer()]->getMethod(), requete.getMethod()))
+                
+                loc = getLocation(urlrcv, clients[i].getNServer());
+
+                if(!((loc == NULL) ? is_allowed(servers[clients[i].getNServer()]->getMethod(), \
+                    requete.getMethod()) : is_allowed(loc->getMethod(), requete.getMethod())))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
                     showError(405, clients[i]);
@@ -185,16 +191,16 @@ void Server::handleRequest()
                 }
                 else
                 {
+                    // else if (clients[i].is_timeout())
+                    //     showError(408, clients[i]);
                     if (requete.getMethod() == "GET")
-                        getMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
+                        getMethod(clients[i], urlrcv);
                     else if (requete.getMethod() == "POST")
-                        postMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()), requete);
+                        postMethod(clients[i], urlrcv, requete);
                     else if (requete.getMethod() == "DELETE")
-                        deleteMethod(clients[i], requete.getUrl().substr(1, requete.getUrl().size()));
+                        deleteMethod(clients[i], urlrcv);
                 }
-                // else if (clients[i].is_timeout())
-                //     showError(408, clients[i]);
-                if(kill_client(clients[i]))
+                if(kill_client(clients[i], requete))
                     i--;
                 clients[i].requestSize = 0;
                 bzero(clients[i].request, MAX_REQUEST_SIZE);
@@ -204,24 +210,34 @@ void Server::handleRequest()
     usleep(500);
 }
 
-void Server::getMethod(Client &client, std::string url)
+void Server::getMethod(Client &client, std::string urlrcv)
 {
     std::cout << colors::bright_yellow << "GET Method !" << std::endl;
 
-    if(url.size() >= 64)
+    if(urlrcv.size() >= 64)
     {
         showError(414, client);
         return ;
     }
     struct stat path_stat;
 
-    std::string fullurl = getRootPatch(url, client.getNServer());
-    FILE *fd = fopen(fullurl.c_str(), "rb");
-    stat(fullurl.c_str(), &path_stat);
+    std::string urlsend = getRootPatch(urlrcv, client.getNServer());
+
+    std::cout << urlsend << "   " << urlrcv << std::endl;
+
+    if(loc && !(loc->getIndex().empty()) && (strcmp(urlrcv.c_str(), \
+        loc->getDir().c_str()) == 0))
+    {
+        showPage(client, loc->getRoot() + loc->getIndex(), 200);
+        return ;
+    }
+
+    FILE *fd = fopen(urlsend.c_str(), "rb");
+    stat(urlsend.c_str(), &path_stat);
 
     if(fd == NULL)
     {
-        std::cout << colors::on_bright_blue << "Ressource not find : "<< fullurl << colors::on_grey << std::endl;
+        std::cout << colors::on_bright_blue << "Ressource not find : "<< urlsend << colors::on_grey << std::endl;
         showError(404, client);
     }
     else
@@ -229,15 +245,16 @@ void Server::getMethod(Client &client, std::string url)
         if(S_ISDIR(path_stat.st_mode))
         {
             std::cout << colors::on_bright_blue << "File is a directory !" << colors::on_grey << std::endl;
-            // std::cerr << fullurl.c_str() << " vs " << servers[client.getNServer()]->getRoot().c_str() << std::endl;
+            std::cerr << urlrcv.c_str() << " vs " << servers[client.getNServer()]->getRoot().c_str() << std::endl;
 
-            if(strcmp(fullurl.c_str(), servers[client.getNServer()]->getRoot().c_str()) == 0)
-                showPage(client, fullurl + servers[client.getNServer()]->getIndex(), 200);
+            std::cout << "----->" << urlrcv << std::endl;
+            if(strcmp(urlrcv.c_str(), "/") == 0)
+                showPage(client, urlsend + servers[client.getNServer()]->getIndex(), 200);
             else
-                rep_listing(client.getClientSocket(), url, fullurl);
+                rep_listing(client.getClientSocket(), urlrcv, urlsend);
         }
         else
-            showPage(client, fullurl, 200);
+            showPage(client, urlsend, 200);
         fclose(fd);
     }
 }
@@ -274,37 +291,31 @@ void Server::postMethod(Client client, std::string url, Requete req)
         showError(411, client);
         return;
     }
-    url = getRootPatch(url, client.getNServer());
+    std::string urlsend = getRootPatch(url, client.getNServer());
 	struct stat buf;
 	lstat(url.c_str(), &buf);
 
-    if(S_ISDIR(buf.st_mode)) {\
-        if(req.getHeader().find("Content-Type") != req.getHeader().end())
+    // OK BUT need body boundary
+    if(S_ISDIR(buf.st_mode))
+    {
+        if(req.getHeader().find("Content-Type") != req.getHeader().end() && req.getHeader()["Content-Type"].find("boundary=") != std::string::npos)
         {
             std::cout << "Upload in directory" << std::endl;
-            // while()
+            // for(int i = 0; i < )
             // {
 
             // }
         }
+        else
+        {
+            showError(400, client);
+            return ;
+        }
     }
     else
     {
-        int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
-        if(fd < 0)
-        {
-            showError(500, client);
+        if(!writewithpoll(urlsend, client, req))
             return ;
-        }
-        std::cerr << "Body --->" << req.getBody() << std::endl;
-        int r = write(fd, req.getBody().c_str(), req.getBody().size()); // ! get body dont work
-        if(r < 0)
-        {
-            showError(500, client);
-            close(fd);
-            return ;
-        }
-        close(fd);
     }
     if(req.getLen() == 0)
         showPage(client, "", 204);

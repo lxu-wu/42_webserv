@@ -44,12 +44,15 @@ class Server
         bool kill_client(Client client);
         void addtowait(int socket, fd_set *set);
         void selectfd(fd_set *read, fd_set *write);
-
-
+        bool writewithpoll(std::string url, Client client, Requete req);
         std::string getRootPatch(std::string url, int i);
+        Location *getLocation(std::string url, int i);
+
         void getMethod(Client &client, std::string url);
         void deleteMethod(Client &client, std::string url);
         void postMethod(Client client, std::string url, Requete req);
+
+
 
         std::vector<Socket> getSocketList() {return sockets; }
         std::vector<Client> getClientsList() {return clients; }
@@ -62,6 +65,9 @@ class Server
         int max_fd;
         fd_set readSet;
         fd_set writeSet;
+
+        Location *loc;
+
 
     private :
         std::vector<Socket> sockets;

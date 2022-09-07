@@ -57,9 +57,16 @@ void Server::showError(int err, Client &client)
 
 bool Server::kill_client(Client client, Requete req)
 {
-    (void)req;
-    // if(req.getHeader().find("keep-alive") != req.getHeader().end())
-    //     return false;
+    (void)req; // If we take keep-alive connection
+    // if(req.getHeader().find("Connection") != req.getHeader().end())
+    // {
+    //     std::cout << "----->" << req.getHeader().find("Connection")->second << std::endl;
+    //     if(req.getHeader()["Connection"] == "close")
+    //         return true;
+    //     else if (req.getHeader()["Connection"] == "keep-alive")
+    //         return false;
+    //     showError(400, client);
+    // }
     close(client.getClientSocket());
     for(size_t i = 0; i < clients.size(); i++)
     {
@@ -74,8 +81,7 @@ bool Server::kill_client(Client client, Requete req)
 
 bool Server::kill_client(Client client)
 {
-    // if(req.getHeader().find("keep-alive") != req.getHeader().end())
-    //     return false;
+    std::cout << colors::red << "Client Killed" << colors::grey << std::endl;
     close(client.getClientSocket());
     for(size_t i = 0; i < clients.size(); i++)
     {
@@ -115,20 +121,19 @@ bool Server::is_allowed(std::vector<std::string> methodlist, std::string methodr
     return false;
 }
 
-std::string Server::getRootPatch(std::string url, int i)
+std::string Server::getRootPatch(std::string urlrcv, int i)
 {
     std::string urlroot = servers[i]->getRoot();
-    // std::vector<Location *> locs = servers[i]->getLocation();
-    
-    // std::string root = info.getServers()[i]->getRoot();
-    // if(!strncmp("./", servers[i]->getRoot().c_str(), 2))
-    //     urlroot += servers[i]->getRoot().substr(1, servers[i]->getRoot().size());
-    // else
-    //     urlroot += servers[i]->getRoot();
+    if(urlroot[urlroot.size() - 1] == '/')
+        urlroot.erase(urlroot.size() - 1, 1);
+    std::cout << (loc == NULL) << std::endl;
+    if(loc && !(loc->getRoot().empty()))
+        urlrcv.erase(urlrcv.find(loc->getDir()), urlrcv.find(loc->getDir()) + loc->getDir().size());
 
-    std::cout << colors::green << urlroot + url << std::endl;
 
-    return urlroot + url;
+
+    std::cout << "Url To Send : " << colors::green << urlroot + urlrcv << std::endl;
+    return urlroot + urlrcv;
 }
 
 bool Server::is_cgi(std::string filename)
@@ -150,6 +155,8 @@ bool Server::is_cgi(std::string filename)
 
 void Server::showPage(Client client, std::string dir, int code)
 {
+    std::cout << colors::on_cyan << "Show Page : " << dir << colors::on_grey << std::endl;
+
     std::string msg;
 
     if(dir.empty())
@@ -183,7 +190,7 @@ void Server::showPage(Client client, std::string dir, int code)
 
 void Server::rep_listing(int socket, std::string path, std::string fullurl)
 {
-    std::cout << colors::green << "Show Repository Listing" << std::endl;
+    std::cout << colors::on_cyan << "Show Repository Listing" << colors::on_grey << std::endl;
 
     DIR *dir;
     struct dirent *ent;
@@ -208,4 +215,59 @@ void Server::rep_listing(int socket, std::string path, std::string fullurl)
     tosend += "</pre>\n</body>\n</html>\n";
     send(socket , tosend.c_str(), tosend.size(), 0);
 }
+
+bool Server::writewithpoll(std::string url, Client client, Requete req)
+{
+    int r = 0;
+    int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
+    if(fd < 0)
+    {
+        showError(500, client);
+        close(fd);
+        return false;
+    }
+
+    // ADD to write queue =================================
+    // FD_SET(fd, &readSet);
+    // if(fd > max_fd)
+    //     max_fd = fd;
+    // if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+    //     exit(-1);
+    // else if (r == 0)
+    //     std::cout << "Select Timeout" << std::endl;
+    // if(FD_ISSET(fd, &writeSet) == 0)
+    // {
+    //     std::cout << "test2" << std::endl;
+    //     showError(500, client);
+    //     close(fd);
+    //     return false;
+    // }
+    // =======================
+
+    std::cout << colors::green << req.getFullBody() << std::endl;
+    r = write(fd, req.getFullBody().c_str(), req.getFullBody().size()); // ! get body dont work
+    if(r < 0)
+    {
+        showError(500, client);
+        close(fd);
+        return false;
+    }
+    close(fd);
+    return true;
+}
+
+Location *Server::getLocation(std::string url, int i)
+{
+    std::vector<Location *> locs = servers[i]->getLocation();
+    for(size_t i = 0; i < locs.size(); i++)
+    {
+        if(strncmp(locs[i]->getDir().c_str(), url.c_str(), locs[i]->getDir().size()) == 0)
+        {
+            std::cout << colors::on_cyan << url << " is Location !" << colors::on_grey << std::endl;
+            return locs[i];
+        }
+    }
+    return NULL;
+}
+
 
