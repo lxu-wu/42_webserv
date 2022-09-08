@@ -127,12 +127,16 @@ void Requete::make_POST(std::stringstream& ss)
 		}
 		else if (_request.find(token) == pos - token.length())
 		{
+			std::cout << "Token = " << token << std::endl;
 			pos += 4;
-			if (!key.empty() && !line.empty() && key != token)
+			if (!key.empty() && key != token)
 			{
-				if (line.back() == ' ')
-					line.pop_back();//remove space 
-				_header.insert(std::pair<std::string, std::string>(key, line));
+				if (!line.empty() && line.back() == ' ')
+					line.pop_back();//remove space
+				if (!line.empty())
+					_header.insert(std::pair<std::string, std::string>(key, line));
+				else
+					_header.insert(std::pair<std::string, std::string>(key, token));
 			}
 			while (_char_request[pos])// || _request[pos + 1]
 			{
