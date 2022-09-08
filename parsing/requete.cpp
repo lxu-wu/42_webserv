@@ -12,11 +12,18 @@
 
 #include "requete.hpp"
 
-Requete::Requete(std::string requete)
+Requete::Requete(char *requete)
 {
 	std::cout << std::endl << "Before check " << std::endl;
+	// std::ofstream MyFile("my_input.txt");
+	// MyFile << requete;
+	// MyFile.close();
+	_char_request = requete;
 	std::stringstream ss(requete);
 	_request = requete;
+	std::cout << "String len = " << _request.size() << std::endl;
+	std::cout << "Char len   = " << strlen(_char_request) << std::endl;
+	sleep(3);
 	_len = 0;
     ss >> this->_method;
     ss >> this->_url;
@@ -143,7 +150,7 @@ void Requete::make_POST(std::stringstream& ss)
 				_header.insert(std::pair<std::string, std::string>(key, line));
 			}
 			//make_body(ss, token);
-			while (_request[pos])// || _request[pos + 1]
+			while (_char_request[pos])// || _request[pos + 1]
 			{
 				//std::cout << "request = " <<_request[pos] << std::endl;
 				//usleep(90000);
@@ -177,6 +184,9 @@ void Requete::make_POST(std::stringstream& ss)
 	std::cout << "BODY    len = " << _len << std::endl;
 	std::cout << "_full_body len = " << _full_body.length() << std::endl;
 	std::cout << "Full Body = " << std::endl << _full_body << std::endl;
+	// std::ofstream MyFile("my_parsing.txt");
+	// MyFile << _full_body;
+	// MyFile.close();
 	std::cout << "END Body" << std::endl;
 	make_full_body();
 }

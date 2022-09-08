@@ -19,6 +19,8 @@
 # include <iterator>
 # include <string>
 # include <unistd.h>
+# include <string.h>
+#include <fstream>
 
 /* 
 - find("\r\n\r\n")
@@ -45,7 +47,7 @@ kuy
 class Requete
 {
 	public:
-		Requete(std::string requete);
+		Requete(char *requete);
 		~Requete() {};
 
 		/* Getters */
@@ -87,6 +89,7 @@ class Requete
 		size_t								_len;//Len from Header
 		std::string							_full_body;//Content body with boundary
 		std::string							_request;//FULL Request
+		char *								_char_request;//FULL Request
 		std::string							_query;//Query text after url without ?
 		std::map<std::string, std::string>	_header;//Header
 		std::map<std::string, std::string>	_text;//if more than 1 request + no content type first arg = name && second = body
