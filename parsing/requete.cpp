@@ -53,45 +53,46 @@ int Requete::check_tim()
 
 
 /* check if content start */
-void Requete::make_body(std::stringstream& ss, std::string token, size_t pos)
+void Requete::make_body(std::stringstream& ss, std::string token)
 {
-	std::string temp, save;
-	(void)pos;
-	while (!token.empty())
-	{
-		ss >> token;
-		ss >> token;//Content-Disposition:
-		ss >> token;//form-data;
-		ss >> token;//name="file1";
-		_name = token.substr(token.find("="));
-		if (_name.back() == ';')
-			_name.pop_back();//remove ;
-		_name.pop_back();//remove " at end
-		_name.erase(0, 2);//remove " at begin
-		ss >> token;
+	std::string save;
+	size_t pos = _request.find("\r\n\r\n") + 4, pos_body = 0;
+
+	ss >> token;
+	ss >> token;//Content-Disposition:
+	ss >> token;//form-data;
+	ss >> token;//name="file1";
+	_name = token.substr(token.find("="));
+	if (_name.back() == ';')
+		_name.pop_back();//remove ;
+	_name.pop_back();//remove " at end
+	_name.erase(0, 2);//remove " at begin
+	ss >> token;
 		
-		if (token.find("filename=") != std::string::npos)
+	if (token.find("filename=") != std::string::npos)
+	{
+		_file_name = token.substr(token.find("="));
+		_file_name.pop_back();//remove " at end
+		_file_name.erase(0, 2);//remove " at begin
+		ss >> token;
+		if (token.find("Content-Type:") != std::string::npos)
 		{
-			_file_name = token.substr(token.find("="));
-			_file_name.pop_back();//remove " at end
-			_file_name.erase(0, 2);//remove " at begin
 			ss >> token;
-			if (token.find("Content-Type:") != std::string::npos)
-			{
-				ss >> token;
-				_type = token;
-				ss >> token;
-			}
-			size_t pos2 = _request.find(token) ;
-			while (_char_request[pos2])
-			{
-				_body += _request[pos2];
-				pos2++;
-			}
-			if (_body.size() > (_boundary.size() + 6))
-				_body.erase(_body.size() - (_boundary.size() + 6));
+			_type = token;
 		}
-		break;
+		pos_body = pos;
+		while (pos < _len + pos_body)
+		{
+			_body += _request[pos];
+			pos++;
+		}
+		if (!_boundary.empty())
+			_body.erase(pos - (_boundary.size() + 6));
+	}
+	else// A lot of inputs
+	{
+		//save = _request.substr(pos);
+
 	}
 }
 
@@ -150,7 +151,7 @@ void Requete::make_POST(std::stringstream& ss)
 				_body = _full_body;
 			else
 			{
-				make_body(ss, token, _request.find("\r\n\r\n") + 4);
+				make_body(ss, token);
 			}
 			break;
 		}
