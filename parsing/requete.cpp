@@ -21,8 +21,6 @@ Requete::Requete(char *requete)
 	_char_request = requete;
 	std::stringstream ss(requete);
 	_request = requete;
-	std::cout << "String len = " << _request.size() << std::endl;
-	std::cout << "Char len   = " << strlen(_char_request) << std::endl;
 	_len = 0;
     ss >> this->_method;
     ss >> this->_url;
@@ -90,7 +88,8 @@ void Requete::make_body(std::stringstream& ss, std::string token, size_t pos)
 				_body += _request[pos2];
 				pos2++;
 			}
-			_body.erase(_body.size() - (_boundary.size() + 6));
+			if (_body.size() > (_boundary.size() + 6))
+				_body.erase(_body.size() - (_boundary.size() + 6));
 		}
 		break;
 	}
@@ -127,27 +126,31 @@ void Requete::make_POST(std::stringstream& ss)
 		}
 		else if (_request.find(token) == pos - token.length())
 		{
-			std::cout << "Token = " << token << std::endl;
 			pos += 4;
 			if (!key.empty() && key != token)
 			{
-				if (!line.empty() && line.back() == ' ')
+				if (!line.empty())
 					line.pop_back();//remove space
 				if (!line.empty())
+				{
 					_header.insert(std::pair<std::string, std::string>(key, line));
+				}
 				else
+				{
 					_header.insert(std::pair<std::string, std::string>(key, token));
+				}
 			}
-			while (_char_request[pos])// || _request[pos + 1]
+			size_t pos_header = pos;
+			while (pos < _len + pos_header)// || _request[pos + 1]
 			{
-				_full_body += _request[pos];
+				_full_body += _char_request[pos];
 				pos++;
 			}
 			if (_boundary.empty())
 				_body = _full_body;
 			else
 			{
-				//make_body(ss, token, _request.find("\r\n\r\n") + 4);
+				make_body(ss, token, _request.find("\r\n\r\n") + 4);
 			}
 			break;
 		}
@@ -171,7 +174,6 @@ void Requete::make_POST(std::stringstream& ss)
 		}
 	}
 	//print_all_data();
-	//sleep(10);
 	std::cout << "Request len = " << _request.size() << std::endl;
 	std::cout << "BODY    len = " << _len << std::endl;
 	std::cout << "_full_body len = " << _full_body.length() << std::endl;
@@ -236,6 +238,6 @@ void Requete::print_all_data()
 	std::cout << "Name      = " << _name << std::endl;
 	std::cout << "Filename  = " << _file_name << std::endl;
 	std::cout << "Type      = " << _type << std::endl;
-	std::cout << "Body      = " << _body << std::endl;
+	//std::cout << "Body      = " << _body << std::endl;
 	//std::cout << "Full Body = " << _full_body << std::endl;
 }
