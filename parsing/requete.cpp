@@ -15,15 +15,14 @@
 Requete::Requete(char *requete)
 {
 	std::cout << std::endl << "Before check " << std::endl;
-	// std::ofstream MyFile("my_input.txt");
-	// MyFile << requete;
-	// MyFile.close();
+	std::ofstream MyFile("my_input.txt");
+	MyFile << requete;
+	MyFile.close();
 	_char_request = requete;
 	std::stringstream ss(requete);
 	_request = requete;
 	std::cout << "String len = " << _request.size() << std::endl;
 	std::cout << "Char len   = " << strlen(_char_request) << std::endl;
-	sleep(3);
 	_len = 0;
     ss >> this->_method;
     ss >> this->_url;
@@ -56,58 +55,44 @@ int Requete::check_tim()
 
 
 /* check if content start */
-void Requete::make_body(std::stringstream& ss, std::string token)
+void Requete::make_body(std::stringstream& ss, std::string token, size_t pos)
 {
 	std::string temp, save;
-
+	(void)pos;
 	while (!token.empty())
 	{
-		if (!(ss >> token))//Content-Disposition:
-			break;
+		ss >> token;
+		ss >> token;//Content-Disposition:
 		ss >> token;//form-data;
 		ss >> token;//name="file1";
-		_name = token.substr(token.find("\""));
-		_name.pop_back();//;
-		_name.pop_back();//"
+		_name = token.substr(token.find("="));
+		if (_name.back() == ';')
+			_name.pop_back();//remove ;
+		_name.pop_back();//remove " at end
+		_name.erase(0, 2);//remove " at begin
 		ss >> token;
 		
-		if (token.find("filename=") == std::string::npos)
+		if (token.find("filename=") != std::string::npos)
 		{
-			while (!token.empty() && token.find(_boundary) == std::string::npos)
-			{
-				temp += token;
-				temp += " ";
-				save = token;
-				ss >> token;
-				if (save == token)
-					break;
-			}
-			_text.insert(std::pair<std::string, std::string>(_name, temp));
-			_body += temp;
-			save.clear();
-			temp.clear();
-		}
-		else
-		{
-			_file_name = token.substr(token.find('"'));
-			_file_name.pop_back();//"
-			ss >> token;//Content-Type:
+			_file_name = token.substr(token.find("="));
+			_file_name.pop_back();//remove " at end
+			_file_name.erase(0, 2);//remove " at begin
 			ss >> token;
-			_type = token;
-			ss >> token;
-			while (!token.empty() && token.find(_boundary) == std::string::npos)
+			if (token.find("Content-Type:") != std::string::npos)
 			{
-				temp += token;
-				temp += " ";
-				save = token;
 				ss >> token;
-				if (save == token)
-					break;
+				_type = token;
+				ss >> token;
 			}
-			_body += temp;
-			save.clear();
-			temp.clear();
+			size_t pos2 = _request.find(token) ;
+			while (_char_request[pos2])
+			{
+				_body += _request[pos2];
+				pos2++;
+			}
+			_body.erase(_body.size() - (_boundary.size() + 6));
 		}
+		break;
 	}
 }
 
@@ -149,16 +134,17 @@ void Requete::make_POST(std::stringstream& ss)
 					line.pop_back();//remove space 
 				_header.insert(std::pair<std::string, std::string>(key, line));
 			}
-			//make_body(ss, token);
 			while (_char_request[pos])// || _request[pos + 1]
 			{
-				//std::cout << "request = " <<_request[pos] << std::endl;
-				//usleep(90000);
 				_full_body += _request[pos];
 				pos++;
 			}
-			// std::cout << "Full Body = " << std::endl << _full_body << std::endl;
-			// sleep(15);
+			if (_boundary.empty())
+				_body = _full_body;
+			else
+			{
+				//make_body(ss, token, _request.find("\r\n\r\n") + 4);
+			}
 			break;
 		}
 		else if (token.back() == ':')
@@ -180,15 +166,16 @@ void Requete::make_POST(std::stringstream& ss)
 			line += token;
 		}
 	}
+	//print_all_data();
+	//sleep(10);
 	std::cout << "Request len = " << _request.size() << std::endl;
 	std::cout << "BODY    len = " << _len << std::endl;
 	std::cout << "_full_body len = " << _full_body.length() << std::endl;
 	std::cout << "Full Body = " << std::endl << _full_body << std::endl;
-	// std::ofstream MyFile("my_parsing.txt");
-	// MyFile << _full_body;
-	// MyFile.close();
 	std::cout << "END Body" << std::endl;
-	make_full_body();
+	std::ofstream MyFile("my_parsing.txt");
+	MyFile << _full_body;
+	MyFile.close();
 }
 
 /* Make get request */
@@ -234,22 +221,17 @@ void Requete::make_query()
 		_query= _url.substr(pos + 1);
 }
 
-void Requete::make_full_body()
-{
-	//_full_body = _body;
-	//std::cout << "request len = " << _request.length() << std::endl;
-	//std::cout << "len = " << _len << std::endl;
-	//_full_body = _request.substr(_request.length() - _len);
-}
 
 /* Print all data in requete */
 void Requete::print_all_data()
 {
-	std::cout << "Method = " << _method << std::endl;
-	std::cout << "Url    = " << _url << std::endl;
-	std::cout << "Protocol = " << _protocol << std::endl;
-	std::cout << "Boundary = " << _boundary << std::endl;
-	std::cout << "Name = " << _name << std::endl;
-	std::cout << "Filename = " << _file_name << std::endl;
-	std::cout << "Type = " << _type << std::endl;
+	std::cout << "Method    = " << _method << std::endl;
+	std::cout << "Url       = " << _url << std::endl;
+	std::cout << "Protocol  = " << _protocol << std::endl;
+	std::cout << "Boundary  = " << _boundary << std::endl;
+	std::cout << "Name      = " << _name << std::endl;
+	std::cout << "Filename  = " << _file_name << std::endl;
+	std::cout << "Type      = " << _type << std::endl;
+	std::cout << "Body      = " << _body << std::endl;
+	//std::cout << "Full Body = " << _full_body << std::endl;
 }

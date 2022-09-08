@@ -68,12 +68,10 @@ class Requete
 
 		/* Functions */
 		int check_tim();
-		void make_body(std::stringstream& ss, std::string token);
-		void make_body_inputs(std::stringstream& ss, std::string token);
+		void make_body(std::stringstream& ss, std::string token, size_t pos);
 		void make_query();
 		void make_GET(std::stringstream& ss);
 		void make_POST(std::stringstream& ss);
-		void make_full_body();
 		void print_all_data();
 
 
