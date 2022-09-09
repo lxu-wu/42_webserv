@@ -16,11 +16,12 @@
 # include <iostream>
 # include <sstream>
 # include <map>
+# include <vector>
 # include <iterator>
 # include <string>
 # include <unistd.h>
 # include <string.h>
-#include <fstream>
+# include <fstream>
 
 /* 
 - find("\r\n\r\n")
@@ -44,6 +45,20 @@ kuy
 ------WebKitFormBoundarydjR69jSXKf1yW666
 */
 
+
+/* 
+A lot of inputs
+------WebKitFormBoundaryY0oueevpAE5GJ0OD
+Content-Disposition: form-data; name="firstname"
+
+htrh
+------WebKitFormBoundaryY0oueevpAE5GJ0OD
+Content-Disposition: form-data; name="firstname"
+
+rthrthr
+------WebKitFormBoundaryY0oueevpAE5GJ0OD--
+*/
+
 class Requete
 {
 	public:
@@ -64,7 +79,7 @@ class Requete
 		std::string							getRequest() const	{return _request;};
 		std::string							getQuery() const	{return _query;};
 		std::map<std::string, std::string>	getHeader() const	{return _header;};
-		std::map<std::string, std::string>	getText() const		{return _text;};
+		std::vector<std::string>			getText() const		{return _text;};
 
 		/* Functions */
 		int check_tim();
@@ -73,6 +88,7 @@ class Requete
 		void make_GET(std::stringstream& ss);
 		void make_POST(std::stringstream& ss);
 		void print_all_data();
+		void print_text();
 
 
 	protected:
@@ -90,7 +106,7 @@ class Requete
 		char *								_char_request;//FULL Request
 		std::string							_query;//Query text after url without ?
 		std::map<std::string, std::string>	_header;//Header
-		std::map<std::string, std::string>	_text;//if more than 1 request + no content type first arg = name && second = body
+		std::vector<std::string>			_text;//For JOHN divided with the word NewFile
 };
 
 #endif

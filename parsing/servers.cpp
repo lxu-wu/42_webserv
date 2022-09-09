@@ -27,6 +27,26 @@ Servers::~Servers()
 }
 
 /* Functions */
+/* check locations are not empty */
+bool Servers::check_locations()
+{
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		if (_locations[i]->getDir().empty())
+			return false;
+		if (_locations[i]->getMethod().empty())
+			return false;
+		if (_locations[i]->getRoot().empty())
+			return false;
+		if (_locations[i]->getIndex().empty())
+			return false;
+		if (_locations[i]->getListing().empty())
+			return false;
+		if (_locations[i]->getRedir().empty())
+			return false;
+	}
+	return true;
+}
 /* check if all locations have index*/
 bool Servers::check_index()
 {
@@ -35,6 +55,17 @@ bool Servers::check_index()
 		if (_locations[i]->getIndex().empty())
 			return false;
 		else if (_locations[i]->getIndex().find(".html") == std::string::npos)
+			return false;
+	}
+	return true;
+}
+
+/* check if listing is off or on */
+bool Servers::check_listing()
+{
+	for (size_t i = 0; i < _locations.size(); i++)
+	{
+		if (_locations[i]->getListing() != "on" && _locations[i]->getListing() != "off")
 			return false;
 	}
 	return true;
@@ -122,5 +153,17 @@ void Servers::stock_location(std::string line, int pos)
 	}
 	else if (word == "allowed_methods")
 		_locations[pos]->setMethod(last);
+	else if (word == "dir_listing")
+	{
+		if (!_locations[pos]->getListing().empty())
+			throw DirTwice();
+		_locations[pos]->setListing(last);
+	}
+	else if (word == "redir")
+	{
+		if (!_locations[pos]->getRedir().empty())
+			throw DirTwice();
+		_locations[pos]->setRedir(last);
+	}
 	
 }

@@ -55,22 +55,23 @@ int Requete::check_tim()
 /* check if content start */
 void Requete::make_body(std::stringstream& ss, std::string token)
 {
-	std::string save;
 	size_t pos = _request.find("\r\n\r\n") + 4, pos_body = 0;
+	std::string save = _request.substr(pos);
 
-	ss >> token;
-	ss >> token;//Content-Disposition:
-	ss >> token;//form-data;
-	ss >> token;//name="file1";
-	_name = token.substr(token.find("="));
-	if (_name.back() == ';')
-		_name.pop_back();//remove ;
-	_name.pop_back();//remove " at end
-	_name.erase(0, 2);//remove " at begin
-	ss >> token;
-		
-	if (token.find("filename=") != std::string::npos)
+	/* ONE BODY */
+	if (save.find("filename=") != std::string::npos)
 	{
+		ss >> token;//boundary
+		ss >> token;//Content-Disposition:
+		ss >> token;//form-data;
+		ss >> token;//name="file1";
+		_name = token.substr(token.find("="));
+		if (_name.back() == ';')
+			_name.pop_back();//remove ;
+		_name.pop_back();//remove " at end
+		_name.erase(0, 2);//remove " at begin
+		ss >> token;
+
 		_file_name = token.substr(token.find("="));
 		_file_name.pop_back();//remove " at end
 		_file_name.erase(0, 2);//remove " at begin
@@ -80,20 +81,43 @@ void Requete::make_body(std::stringstream& ss, std::string token)
 			ss >> token;
 			_type = token;
 		}
-		pos_body = pos;
-		while (pos < _len + pos_body)
-		{
-			_body += _request[pos];
-			pos++;
-		}
-		if (!_boundary.empty())
-			_body.erase(pos - (_boundary.size() + 6));
 	}
-	else// A lot of inputs
+	else /* MORE BODYS */
 	{
-		//save = _request.substr(pos);
-
+		ss >> token;
+		while (!save.empty())
+		{
+			_text.push_back("NewFile");
+			ss >> token;//Content-Disposition:
+			ss >> token;//form-data;
+			_text.push_back(token);
+			ss >> token;//name="file1";
+			save.erase(0, save.find(token) + token.length() + 4);
+			_name = token.substr(token.find("="));
+			if (_name.back() == ';')
+				_name.pop_back();//remove ;
+			_name.pop_back();//remove " at end
+			_name.erase(0, 2);//remove " at begin
+			_text.push_back(_name);
+			while (token.find(_boundary) == std::string::npos) //Advance till next boundary
+				ss >> token;
+			_body = save.substr(0, save.find(_boundary) - 3);
+			_text.push_back(_body);
+			_body.clear();
+			if (save[save.find(_boundary) + _boundary.size()] == '-')//End of body
+				break;
+		}
+		//print_text();
 	}
+
+	/* Make full body */
+	pos_body = pos;
+	while (pos < _len + pos_body)
+	{
+		_body += _char_request[pos];
+		pos++;
+	}
+		
 }
 
 /* Make post request */
@@ -241,4 +265,15 @@ void Requete::print_all_data()
 	std::cout << "Type      = " << _type << std::endl;
 	//std::cout << "Body      = " << _body << std::endl;
 	//std::cout << "Full Body = " << _full_body << std::endl;
+}
+
+/* Print text */
+void Requete::print_text()
+{
+	std::vector<std::string>::iterator it = _text.begin();
+	while (it != _text.end())
+	{
+		std::cout << "It = " << *it << std::endl;
+		it++;
+	}
 }

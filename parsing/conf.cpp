@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:12 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/06 13:36:13 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/09 14:59:46 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,8 @@ Conf::Conf()
 	_directives.push_back("index");
 	_directives.push_back("client_max_body_size");
 	_directives.push_back("location");
+	_directives.push_back("dir_listing");
+	_directives.push_back("redir");
 }
 
 Conf::~Conf()
@@ -50,6 +52,8 @@ void Conf::check_data()
 		if (_servers[i]->getName().empty() || _servers[i]->getListen().empty() || _servers[i]->getRoot().empty() 
 			|| _servers[i]->getIndex().empty() || _servers[i]->getMethod().empty()  || _servers[i]->getBody().empty())
 			throw DirMissing();
+		if (!_servers[i]->check_locations())
+			throw DirMissing();
 		if (!my_atoi(_servers[i]->getListen()) || !my_atoi(_servers[i]->getBody()))
 			throw NotINT();
 		if (!_servers[i]->check_error_page())
@@ -60,6 +64,8 @@ void Conf::check_data()
 			throw RootErr();
 		if (!_servers[i]->check_index())
 			throw IndexLoc();
+		if (!_servers[i]->check_listing())
+			throw ListingErr();
 	}
 	
 }
@@ -95,6 +101,8 @@ void Conf::print_all_data()
 			cout << "dir = " << _servers[i]->getLocation()[x]->getDir() << endl;
 			cout << "root = " << _servers[i]->getLocation()[x]->getRoot() << endl;
 			cout << "index = " << _servers[i]->getLocation()[x]->getIndex() << endl;
+			cout << "listing = " << _servers[i]->getLocation()[x]->getListing() << endl;
+			cout << "redir = " << _servers[i]->getLocation()[x]->getRedir() << endl;
 			cout << "methods = ";
 			for (size_t len = 0; len < _servers[i]->getLocation()[x]->getMethod().size(); len++)
 				cout << _servers[i]->getLocation()[x]->getMethod()[len] << " ";
@@ -239,6 +247,8 @@ void Conf::is_directive(std::string line, int pos)
 			else if (count == 2 && word == "error_page")
 				throw MissingArgv();
 			else if (_file_pos[pos] == 1 && (word == "listen" || word == "client_max_body_size" || word == "server_name")) //0 == server, 1 == location
+				throw DirWrongPlace();
+			else if (_file_pos[pos] == 0 && (word == "dir_listing" || word == "redir" )) //0 == server, 1 == location
 				throw DirWrongPlace();
 			return ;
 		}

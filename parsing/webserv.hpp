@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/06 13:19:44 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/09 14:55:38 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,18 +58,24 @@ class Location
 		void setRoot(std::string word)		{_root = word;};
 		void setIndex(std::string word)		{_index = word;};
 		void setMethod(std::string word)	{_method.push_back(word);};
+		void setListing(std::string word)	{_listing = word;};
+		void setRedir(std::string word)		{_redir = word;};
 
 		/* Getters */
-		std::string					getDir()	{return _dir;};
-		std::vector<std::string>	getMethod()	{return _method;};
-		std::string					getRoot()	{return _root;};
-		std::string					getIndex()	{return _index;};
+		std::string					getDir()		{return _dir;};
+		std::vector<std::string>	getMethod()		{return _method;};
+		std::string					getRoot()		{return _root;};
+		std::string					getIndex()		{return _index;};
+		std::string					getListing()	{return _listing;};
+		std::string					getRedir()		{return _redir;};
 		
 	private:
 		std::string					_dir;
 		std::vector<std::string>	_method;
 		std::string					_root;
 		std::string					_index;
+		std::string					_listing;
+		std::string					_redir;
 };
 
 class Servers
@@ -104,6 +110,8 @@ class Servers
 		bool check_error_page();
 		bool check_root();
 		bool check_index();
+		bool check_listing();
+		bool check_locations();
 
 	private:
 		std::string							_listen;
@@ -166,5 +174,6 @@ class DirTwice : EXCEPTION {WHAT throw () { return ("Error: Two times the same d
 class RequestErr : EXCEPTION {WHAT throw () { return ("Error: Request method wrong"); }};
 class RootErr : EXCEPTION {WHAT throw () { return ("Error: In root path"); }};
 class IndexLoc : EXCEPTION {WHAT throw () { return ("Error: Missing index in location"); }};
+class ListingErr : EXCEPTION {WHAT throw () { return ("Error: Dir_listing must be on or off"); }};
 
 #endif
