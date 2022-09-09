@@ -50,7 +50,8 @@ void Conf::check_data()
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
 		if (_servers[i]->getName().empty() || _servers[i]->getListen().empty() || _servers[i]->getRoot().empty() 
-			|| _servers[i]->getIndex().empty() || _servers[i]->getMethod().empty()  || _servers[i]->getBody().empty())
+			|| _servers[i]->getIndex().empty() || _servers[i]->getMethod().empty()  || _servers[i]->getBody().empty()
+			|| _servers[i]->getListing().empty())
 			throw DirMissing();
 		if (!_servers[i]->check_locations())
 			throw DirMissing();
@@ -82,6 +83,7 @@ void Conf::print_all_data()
 		cout << "root = " << _servers[i]->getRoot() << endl;
 		cout << "index = " << _servers[i]->getIndex() << endl;
 		cout << "body = " << _servers[i]->getBody() << endl;
+		cout << "listing = " << _servers[i]->getListing() << endl;
 		cout << "methods = ";
 		for (size_t len = 0; len < _servers[i]->getMethod().size(); len++)
 			cout << _servers[i]->getMethod()[len] << " ";
@@ -214,6 +216,12 @@ void Conf::stock_server(std::string line, Servers* server)
 		}
 		else if (word == "allowed_methods")
 			server->setMethod(last);
+		else if (word == "dir_listing")
+		{
+			if (!server->getListing().empty())
+				throw DirTwice();
+			server->setListing(last);
+		}
 	}
 	else if (count >= 3)
 	{
@@ -248,7 +256,7 @@ void Conf::is_directive(std::string line, int pos)
 				throw MissingArgv();
 			else if (_file_pos[pos] == 1 && (word == "listen" || word == "client_max_body_size" || word == "server_name")) //0 == server, 1 == location
 				throw DirWrongPlace();
-			else if (_file_pos[pos] == 0 && (word == "dir_listing" || word == "redir" )) //0 == server, 1 == location
+			else if (_file_pos[pos] == 0 && (word == "redir" )) //0 == server, 1 == location
 				throw DirWrongPlace();
 			return ;
 		}

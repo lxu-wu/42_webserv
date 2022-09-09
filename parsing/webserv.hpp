@@ -93,6 +93,7 @@ class Servers
 		void setIndex(std::string word)						{_index = word;};
 		void setBody(std::string word)						{_body_size = word;};
 		void setLocation()									{_locations.push_back(new Location());};
+		void setListing(std::string word)					{_listing = word;};
 
 		/* Getters */
 		std::string							getListen()		{return _listen;};
@@ -103,6 +104,7 @@ class Servers
 		std::string							getIndex()		{return _index;};
 		std::string							getBody()		{return _body_size;};
 		std::vector<Location*>				getLocation()	{return _locations;};
+		std::string							getListing()	{return _listing;};
 		
 		/* Functions */
 		void stock_location(std::string line, int pos);
@@ -122,6 +124,7 @@ class Servers
 		std::string							_index;
 		std::string							_body_size;
 		std::vector<Location*>				_locations;
+		std::string							_listing;
 
 };
 

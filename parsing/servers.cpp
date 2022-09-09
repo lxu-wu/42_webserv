@@ -63,6 +63,8 @@ bool Servers::check_index()
 /* check if listing is off or on */
 bool Servers::check_listing()
 {
+	if (_listing != "on" && _listing != "off")
+		return false;
 	for (size_t i = 0; i < _locations.size(); i++)
 	{
 		if (_locations[i]->getListing() != "on" && _locations[i]->getListing() != "off")
