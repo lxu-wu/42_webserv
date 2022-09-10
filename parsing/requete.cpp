@@ -14,7 +14,6 @@
 
 Requete::Requete(char *requete)
 {
-	std::cout << std::endl << "Before check " << std::endl;
 	std::ofstream MyFile("my_input.txt");
 	MyFile << requete;
 	MyFile.close();
@@ -26,19 +25,10 @@ Requete::Requete(char *requete)
     ss >> this->_url;
 	ss >> this->_protocol;
 	make_query();
-	std::cout << "Method = " << _method << std::endl;
 	if (_method == "GET")
-	{
-		std::cout << "---- Before GET " << std::endl;
 		make_GET(ss);
-	}
 	else if (_method == "POST")
-	{
-		std::cout << "---- Before POST " << std::endl;
 		make_POST(ss);
-
-	}
-	std::cout << "After check " << std::endl;
 }
 
 /* Check if request is good */
@@ -198,15 +188,6 @@ void Requete::make_POST(std::stringstream& ss)
 			line += token;
 		}
 	}
-	//print_all_data();
-	std::cout << "Request len = " << _request.size() << std::endl;
-	std::cout << "BODY    len = " << _len << std::endl;
-	std::cout << "_full_body len = " << _full_body.length() << std::endl;
-	std::cout << "Full Body = " << std::endl << _full_body << std::endl;
-	std::cout << "END Body" << std::endl;
-	std::ofstream MyFile("my_parsing.txt");
-	MyFile << _full_body;
-	MyFile.close();
 }
 
 /* Make get request */
@@ -253,19 +234,19 @@ void Requete::make_query()
 }
 
 
-/* Print all data in requete */
-void Requete::print_all_data()
-{
-	std::cout << "Method    = " << _method << std::endl;
-	std::cout << "Url       = " << _url << std::endl;
-	std::cout << "Protocol  = " << _protocol << std::endl;
-	std::cout << "Boundary  = " << _boundary << std::endl;
-	std::cout << "Name      = " << _name << std::endl;
-	std::cout << "Filename  = " << _file_name << std::endl;
-	std::cout << "Type      = " << _type << std::endl;
-	//std::cout << "Body      = " << _body << std::endl;
-	//std::cout << "Full Body = " << _full_body << std::endl;
-}
+// /* Print all data in requete */
+// void Requete::print_all_data()
+// {
+// 	std::cout << "Method    = " << _method << std::endl;
+// 	std::cout << "Url       = " << _url << std::endl;
+// 	std::cout << "Protocol  = " << _protocol << std::endl;
+// 	std::cout << "Boundary  = " << _boundary << std::endl;
+// 	std::cout << "Name      = " << _name << std::endl;
+// 	std::cout << "Filename  = " << _file_name << std::endl;
+// 	std::cout << "Type      = " << _type << std::endl;
+// 	//std::cout << "Body      = " << _body << std::endl;
+// 	//std::cout << "Full Body = " << _full_body << std::endl;
+// }
 
 /* Print text */
 void Requete::print_text()

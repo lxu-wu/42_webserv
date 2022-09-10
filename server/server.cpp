@@ -2,12 +2,6 @@
 #include "../parsing/requete.hpp"
 #include "../parsing/webserv.hpp"
 
-
-// TO DO
-// + Add parse url of req and root
-//
-
-
 bool is_request_done(char *request)
 {
 	char *body = strstr(request, "\r\n\r\n");
@@ -309,7 +303,6 @@ void Server::postMethod(Client client, std::string url, Requete req)
 	struct stat buf;
 	lstat(urlsend.c_str(), &buf);
 
-    // OK BUT need body boundary
     if(S_ISDIR(buf.st_mode))
     {
 
@@ -318,8 +311,6 @@ void Server::postMethod(Client client, std::string url, Requete req)
         size_t end = 0;
         std::string body = req.getFullBody();
         std::string file;
-
-        // std::cout << req.getBoundary() <<  std::endl;
         if(!(req.getHeader()["Content-Type"].empty()) && !(req.getBoundary().empty()))
         {
             std::cout << colors::on_cyan <<  "Post in directory : " << colors::on_grey << colors::green << std::endl;

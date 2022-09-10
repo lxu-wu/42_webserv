@@ -33,12 +33,12 @@ void Server::initServer()
 
 void Server::showError(int err, Client &client)
 {
-    // std::map<std::string , std::string> err_map = servers[client.getNServer()]->getError();
-    // std::map<std::string , std::string>::iterator it2 = err_map.find(std::to_string(err));
-    // if(it2 != servers[client.getNServer()]->getError().end())
-    //     showPage(client, it2->second, 200);
-    // else
-    // {
+    std::map<std::string , std::string> err_map = servers[client.getNServer()]->getError();
+    std::map<std::string , std::string>::iterator it2 = err_map.find(std::to_string(err));
+    if(it2 != servers[client.getNServer()]->getError().end())
+        showPage(client, it2->second, 200);
+    else
+    {
         std::map<int , std::string>::iterator it = errors.find(err);
         if(it != errors.end())
         {
@@ -50,23 +50,23 @@ void Server::showError(int err, Client &client)
             else if (sendret == 0)
                 std::cout << "0 byte passed to server" << std::endl;
         }
-        
-    // }
+    }
 }
 
 
 bool Server::kill_client(Client client, Requete req)
 {
-    (void)req; // If we take keep-alive connection
-    // if(req.getHeader().find("Connection") != req.getHeader().end())
-    // {
-    //     std::cout << "----->" << req.getHeader().find("Connection")->second << std::endl;
-    //     if(req.getHeader()["Connection"] == "close")
-    //         return true;
-    //     else if (req.getHeader()["Connection"] == "keep-alive")
-    //         return false;
-    //     showError(400, client);
-    // }
+    // Keep alive connection
+    if(req.getHeader().find("Connection") != req.getHeader().end())
+    {
+        std::cout << "----->" << req.getHeader()["Connection"] << std::endl;
+        if(req.getHeader()["Connection"] == "close")
+            return true;
+        else if (req.getHeader()["Connection"] == "keep-alive")
+            return false;
+        showError(400, client);
+    }
+    // close + erase client
     close(client.getClientSocket());
     for(size_t i = 0; i < clients.size(); i++)
     {
