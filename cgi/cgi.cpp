@@ -9,7 +9,7 @@ std::string fileExtent(std::string filePwd)
     while(i && filePwd[i] != '.')
         i--;
     if (!strcmp(&filePwd[i], ".py"))
-        return "/usr/bin/python2.7";
+        return "/usr/local/bin/python2.7";
     if (!strcmp(&filePwd[i], ".pl"))
         return "/usr/bin/perl";
     return "";
@@ -27,7 +27,7 @@ std::string searchExec(std::string filePwd, char **envp)
         std::cerr << "uncompatible CGI-script" << std::endl;
         return ("");
     }
-
+    std::cout << exec << std::endl;
     if (!access(exec.c_str(), X_OK))
         return exec;
     return ("");

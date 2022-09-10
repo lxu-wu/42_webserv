@@ -1,24 +1,37 @@
 #include "socket.hpp"
 
-void Socket::setup(size_t port) {
+void Socket::setup(std::string port, std::string ip) {
+    int port_int = stoi(port);
     struct sockaddr_in address;
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
-    address.sin_port = htons(port);
+    address.sin_port = htons(port_int);
+
+    if(ip.empty())
+        ip = "0.0.0.0";
 
     if((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        perror("ServerSocket");
+        perror("serverSocket : ");
         exit(-1);
     }
+
     fcntl(serverSocket, F_SETFL, O_NONBLOCK);
-    // if(setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, (void *)&time_start, sizeof(struct)))
+
+    int value = 1;
+    if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value)) == -1)
+    {
+        perror("setsockopt :");
+        exit(-1);
+    }
+
+    address.sin_addr.s_addr = inet_addr(ip.c_str());
     if((bind(serverSocket, (struct sockaddr *)&address, sizeof(address))) < 0)
     {
         perror("bind");
         exit(-1);
     }
-    if (listen(serverSocket, 1000) != 0)
+    if (listen(serverSocket, 42) != 0)
     {
         perror("Listenning");
         exit(-1);

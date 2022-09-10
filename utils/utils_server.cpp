@@ -7,7 +7,7 @@ void Server::initServer()
     for(size_t i = 0; i < servers.size(); i++)
     {
         Socket socket;
-        socket.setup(stoi(servers[i]->getListen()));
+        socket.setup(servers[i]->getListen(), servers[i]->getName());
         sockets.push_back(socket);
     }
 	errors.insert(std::make_pair(200, "200 OK"));
@@ -275,4 +275,14 @@ Location *Server::getLocation(std::string url, int i)
     return NULL;
 }
 
+void Server::do_redir(Client client, std::string url)
+{
+    std::cout << colors::on_cyan << "Is a redirection to : " << url << colors::on_grey << std::endl;
+    std::string tosend = "HTTP/1.1 200 OK\n\n<head><meta http-equiv = \"refresh\" content = \"0; url =" + url + "\" /></head>";
 
+    int r = send(client.getClientSocket(), tosend.c_str(), tosend.size(), 0);
+    if(r < 0)
+        showError(500, client);
+    else if (r == 0)
+        showError(400, client);
+}

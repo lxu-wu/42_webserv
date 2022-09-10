@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   servers.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
+/*   By: jdecorte42 <jdecorte42@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:15 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/06 14:00:12 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/09 23:07:44 by jdecorte42       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,6 @@ bool Servers::check_locations()
 		if (_locations[i]->getIndex().empty())
 			return false;
 		if (_locations[i]->getListing().empty())
-			return false;
-		if (_locations[i]->getRedir().empty())
 			return false;
 	}
 	return true;

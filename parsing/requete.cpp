@@ -166,7 +166,7 @@ void Requete::make_POST(std::stringstream& ss)
 				}
 			}
 			size_t pos_header = pos;
-			while (pos < _len + pos_header)// || _request[pos + 1]
+			while (pos < _len + pos_header - 1)// || _request[pos + 1]
 			{
 				_full_body += _char_request[pos];
 				pos++;

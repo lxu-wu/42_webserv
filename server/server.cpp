@@ -133,7 +133,7 @@ void Server::handleRequest()
             }
             else if(Reqsize == 0)
             {
-                std::cout << colors::on_bright_red << "Connection is closed !" << std::endl;
+                std::cout << colors::on_bright_red << "Connection is closed !" << colors::on_grey << std::endl;
                 kill_client(clients[i]);
                 i--;
             }
@@ -156,8 +156,13 @@ void Server::handleRequest()
                     continue;       
                 }
                 std::string urlrcv = requete.getUrl();
-
-
+                size_t pos;
+                if((pos = urlrcv.rfind("?")) != std::string::npos)
+                {
+                    query = urlrcv.substr(pos, urlrcv.size());
+                    std::cout << query << std::endl;
+                    urlrcv = urlrcv.substr(0, pos);
+                }
                 if(requete.getLen() != std::string::npos && requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
                     showError(413, clients[i]);
@@ -177,7 +182,7 @@ void Server::handleRequest()
                         i--;
                     continue;
                 }
-                if (is_cgi(requete.getUrl()))
+                if (is_cgi(urlrcv))
                 {
                     std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
 
@@ -198,8 +203,10 @@ void Server::handleRequest()
                 {
                     // else if (clients[i].is_timeout())
                     //     showError(408, clients[i]);
-                    if (requete.getMethod() == "GET")
-                        getMethod(clients[i], urlrcv);
+                    if(loc && !loc->getRedir().empty())
+                        do_redir(clients[i], loc->getRedir());
+                    else if (requete.getMethod() == "GET")
+                        getMethod(clients[i], urlrcv, requete);
                     else if (requete.getMethod() == "POST")
                         postMethod(clients[i], urlrcv, requete);
                     else if (requete.getMethod() == "DELETE")
@@ -218,7 +225,7 @@ void Server::handleRequest()
     usleep(500);
 }
 
-void Server::getMethod(Client &client, std::string urlrcv)
+void Server::getMethod(Client &client, std::string urlrcv, Requete req)
 {
     std::cout << colors::bright_yellow << "GET Method !" << std::endl;
 
@@ -253,13 +260,13 @@ void Server::getMethod(Client &client, std::string urlrcv)
         if(S_ISDIR(path_stat.st_mode))
         {
             std::cout << colors::on_bright_blue << "File is a directory !" << colors::on_grey << std::endl;
-            std::cerr << urlrcv.c_str() << " vs " << servers[client.getNServer()]->getRoot().c_str() << std::endl;
 
-            std::cout << "----->" << urlrcv << std::endl;
             if(strcmp(urlrcv.c_str(), "/") == 0)
                 showPage(client, urlsend + servers[client.getNServer()]->getIndex(), 200);
-            else
+            else if(servers[client.getNServer()]->getListing() == "on" || loc && loc->getListing() == "on")
                 rep_listing(client.getClientSocket(), urlrcv, urlsend, client);
+            else
+                showError(404, client);
         }
         else
             showPage(client, urlsend, 200);
@@ -301,28 +308,18 @@ void Server::postMethod(Client client, std::string url, Requete req)
     }
     std::string urlsend = getRootPatch(url, client.getNServer());
 	struct stat buf;
-	lstat(url.c_str(), &buf);
+	lstat(urlsend.c_str(), &buf);
 
     // OK BUT need body boundary
     if(S_ISDIR(buf.st_mode))
     {
-        if(req.getHeader().find("Content-Type") != req.getHeader().end() && req.getHeader()["Content-Type"].find("boundary=") != std::string::npos)
-        {
-            std::cout << "Upload in directory" << std::endl;
-            std::cout << req.getText().find("name")->second << std::endl;
-            // for(int i = 0; i < )
-            // {
-
-            // }
-        }
-        else
-        {
-            showError(400, client);
-            return ;
-        }
+        // std::cout << "Post in directory" << std::endl;
+        // for(int i = 0; i < req.getText().size(); i++)
+        //     std::cout << req.getText()[i] << std::endl;
     }
     else
     {
+        std::cout << "Post in file" << std::endl;
         if(!writewithpoll(urlsend, client, req))
             return ;
     }

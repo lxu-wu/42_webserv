@@ -48,9 +48,11 @@ class Server
         std::string getRootPatch(std::string url, int i);
         Location *getLocation(std::string url, int i);
 
-        void getMethod(Client &client, std::string url);
+        void getMethod(Client &client, std::string url, Requete req);
         void deleteMethod(Client &client, std::string url);
         void postMethod(Client client, std::string url, Requete req);
+
+        void do_redir(Client client, std::string url);
 
 
 
@@ -68,6 +70,7 @@ class Server
 
         Location *loc;
 
+        std::string query;
 
     private :
         std::vector<Socket> sockets;

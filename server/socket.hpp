@@ -16,11 +16,13 @@
 
 #include "../client/client.hpp"
 #include "../utils/colors.hpp"
+#include <arpa/inet.h>
+
 
 class Socket
 {
     public :
-        void setup(size_t port); // setup the server and client socket
+        void setup(std::string port, std::string ip); // setup the server and client socket
         void start(); // Wait for client
         void showPage(std::string dir); // Send a request to the server for show page requested
         void waitClient(); // Wait for client to connect
