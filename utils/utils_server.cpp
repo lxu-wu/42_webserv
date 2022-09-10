@@ -155,7 +155,8 @@ bool Server::is_cgi(std::string filename)
 
 void Server::showPage(Client client, std::string dir, int code)
 {
-    std::cout << colors::on_cyan << "Show Page : " << dir << colors::on_grey << std::endl;
+    if(dir != "")
+        std::cout << colors::on_cyan << "Show Page : " << dir << colors::on_grey << std::endl;
 
     std::string msg;
 
@@ -219,6 +220,45 @@ void Server::rep_listing(int socket, std::string path, std::string fullurl, Clie
     else if (r == 0)
         showError(400, client);
      
+}
+
+bool Server::writewithpoll(std::string url, Client client, std::string str)
+{
+    int r = 0;
+    int fd = open(url.c_str(), O_WRONLY | O_TRUNC | O_CREAT, 0644);
+    if(fd < 0)
+    {
+        showError(500, client);
+        close(fd);
+        return false;
+    }
+
+    // ADD to write queue =================================
+    // FD_SET(fd, &readSet);
+    // if(fd > max_fd)
+    //     max_fd = fd;
+    // if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+    //     exit(-1);
+    // else if (r == 0)
+    //     std::cout << "Select Timeout" << std::endl;
+    // if(FD_ISSET(fd, &writeSet) == 0)
+    // {
+    //     std::cout << "test2" << std::endl;
+    //     showError(500, client);
+    //     close(fd);
+    //     return false;
+    // }
+    // =======================
+
+    r = write(fd, str.c_str(), str.size()); // ! get body dont work
+    if(r < 0)
+    {
+        showError(500, client);
+        close(fd);
+        return false;
+    }
+    close(fd);
+    return true;
 }
 
 bool Server::writewithpoll(std::string url, Client client, Requete req)

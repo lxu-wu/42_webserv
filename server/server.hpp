@@ -45,6 +45,9 @@ class Server
         void addtowait(int socket, fd_set *set);
         void selectfd(fd_set *read, fd_set *write);
         bool writewithpoll(std::string url, Client client, Requete req);
+        bool writewithpoll(std::string url, Client client, std::string str);
+
+
         std::string getRootPatch(std::string url, int i);
         Location *getLocation(std::string url, int i);
 

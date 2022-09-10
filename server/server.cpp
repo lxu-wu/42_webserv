@@ -115,15 +115,14 @@ void Server::handleRequest()
                     MAX_REQUEST_SIZE - clients[i].requestSize, 0);
 
             clients[i].requestSize += Reqsize;
-            std::cout << clients[i].request << std::endl;
 
-            if(clients[i].requestSize > MAX_REQUEST_SIZE)
-            {
-                showError(413, clients[i]);
-                if(kill_client(clients[i]))
-                    i--;
-                continue;
-            }
+            // if(clients[i].requestSize > MAX_REQUEST_SIZE)
+            // {
+            //     showError(413, clients[i]);
+            //     if(kill_client(clients[i]))
+            //         i--;
+            //     continue;
+            // }
             if (Reqsize < 0)
             {
                 std::cout << "Recv failed !" << std::endl;
@@ -313,9 +312,47 @@ void Server::postMethod(Client client, std::string url, Requete req)
     // OK BUT need body boundary
     if(S_ISDIR(buf.st_mode))
     {
-        // std::cout << "Post in directory" << std::endl;
-        // for(int i = 0; i < req.getText().size(); i++)
-        //     std::cout << req.getText()[i] << std::endl;
+
+        std::string name;
+        size_t start = 0;
+        size_t end = 0;
+        std::string body = req.getFullBody();
+        std::string file;
+
+        // std::cout << req.getBoundary() <<  std::endl;
+        if(!(req.getHeader()["Content-Type"].empty()) && !(req.getBoundary().empty()))
+        {
+            std::cout << colors::on_cyan <<  "Post in directory : " << colors::on_grey << colors::green << std::endl;
+            for(int i = 0; true; i++)
+            {
+                if((start = body.find("name=\"", start)) == std::string::npos)
+                    break ;
+                start += 6;
+                if((end = body.find("\"", start)) == std::string::npos)
+                    break ;
+                name = body.substr(start, end - start);
+                std::cout << "+ " + name << std::endl;
+
+                if((start = body.find("\r\n\r\n", end)) == std::string::npos)
+                    break ;
+                start += 4;
+                if((end = body.find(req.getBoundary(), start)) == std::string::npos)
+                    break ;
+                
+                file = body.substr(start, end - start - 4);
+
+                if(!writewithpoll(urlsend + "/" + name, client, file))
+                    break ;
+
+                if(body[end + req.getBoundary().size()] == '-')
+                    break ;
+            }
+        }
+        else
+        {
+            showError(400, client);
+            return ;
+        }
     }
     else
     {
