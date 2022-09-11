@@ -33,10 +33,20 @@ void Server::initServer()
 
 void Server::showError(int err, Client &client)
 {
-    std::map<std::string , std::string> err_map = servers[client.getNServer()]->getError();
-    std::map<std::string , std::string>::iterator it2 = err_map.find(std::to_string(err));
-    if(it2 != servers[client.getNServer()]->getError().end())
-        showPage(client, it2->second, 200);
+    std::map<std::string , std::string> errpages = servers[client.getNServer()]->getError();
+    if(errpages.find(std::to_string(err)) != errpages.end())
+    {
+        int fd = open(errpages[std::to_string(err)].c_str(), O_RDONLY);
+        if(fd < 0)
+        {
+            std::cout << colors::on_bright_red << "Show error : " << errors[err] << " !" << colors::on_grey << std::endl;
+            std::cout << colors::on_bright_red << "Pre-Config Error Page don't exist : " << errpages[std::to_string(err)] << colors::on_grey << std::endl;
+            close(fd);
+            return ;
+        }
+        close(fd);
+        showPage(client, errpages[std::to_string(err)], 200);
+    }
     else
     {
         std::map<int , std::string>::iterator it = errors.find(err);
@@ -57,15 +67,11 @@ void Server::showError(int err, Client &client)
 bool Server::kill_client(Client client, Requete req)
 {
     // Keep alive connection
-    if(req.getHeader().find("Connection") != req.getHeader().end())
-    {
-        std::cout << "----->" << req.getHeader()["Connection"] << std::endl;
-        if(req.getHeader()["Connection"] == "close")
-            return true;
-        else if (req.getHeader()["Connection"] == "keep-alive")
-            return false;
-        showError(400, client);
-    }
+    // if(req.getHeader().find("Connection") != req.getHeader().end())
+    // {
+    //     if (req.getHeader()["Connection"] == "keep-alive")
+    //         return false;
+    // }
     // close + erase client
     close(client.getClientSocket());
     for(size_t i = 0; i < clients.size(); i++)
@@ -155,38 +161,108 @@ bool Server::is_cgi(std::string filename)
 
 void Server::showPage(Client client, std::string dir, int code)
 {
+    int r;
+
     if(dir != "")
         std::cout << colors::on_cyan << "Show Page : " << dir << colors::on_grey << std::endl;
 
-    std::string msg;
-
     if(dir.empty())
-        msg = "HTTP/1.1 " + errors.find(code)->second + "\n\n";
+    {
+        std::string err_msg = "HTTP/1.1 " + errors[code] + "\n\n";
+        if((r = send(client.getClientSocket() , err_msg.c_str(), err_msg.size(), 0)) < 0)
+            showError(500, client);
+        else if(r == 0)
+            showError(400, client);
+        return ;
+    }
     else
     {
-        FILE *fd = fopen(dir.c_str(), "rb");
-        if(fd == NULL)
-        {
-            std::cout << colors::on_bright_red << "Error: Couldn't open " << dir << colors::on_grey << std::endl;
-            return ;
-        }
-        fseek (fd , 0 , SEEK_END);
-        int lSize = ftell (fd);
-        rewind (fd);
-
-        std::string type = find_type(dir);
+        FILE *fd_s = fopen(dir.c_str(), "rb");
+        fseek (fd_s , 0, SEEK_END);
+        int lSize = ftell (fd_s);
+        rewind (fd_s);
+        fclose(fd_s);
 
         char file[lSize];
-        size_t len = fread(file, 1, lSize, fd);
-        fclose(fd);
-        std::string data(file, len);
-        msg = "HTTP/1.1 " + errors.find(code)->second + "\n" + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n" + data;
+        std::string type = find_type(dir);
+
+        std::string msg = "HTTP/1.1 " + errors.find(code)->second + "\n" + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n";
+        int ret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+        if(ret < 0)
+            showError(500, client);
+        else if(ret == 0)
+            showError(400, client);
+
+
+
+        int fd_r = open(dir.c_str(), O_RDONLY);
+        if (fd_r < 0)
+        {
+            showError(500, client);
+            return ;
+        }
+
+        // ADD to read queue =================================
+        // FD_SET(fd_r, &readSet);
+        // if(fd_r > max_fd)
+        //     max_fd = fd_r;
+        // if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+        //     exit(-1);
+        // else if (r == 0)
+        //     std::cout << "Select Timeout" << std::endl;
+        // if(FD_ISSET(fd_r, &writeSet) == 0)
+        // {
+        //     showError(500, client);
+        //     close(fd_r);
+        //     return ;
+        // }
+        // ==========================
+
+        int r2;
+        int r = read(fd_r, file, lSize);
+        if(r < 0)
+            showError(500, client);
+        else // Get big file
+        {
+            while(r)
+            {
+                if((r2 = send(client.getClientSocket(), file, r, 0)) < 0)
+                {
+                    showError(500, client);
+                    break;
+                }
+                else if (r2 == 0)
+                {
+                    showError(400, client);
+                    break;
+                }
+
+                // ADD to read queue =================================
+                // FD_SET(fd_r, &readSet);
+                // if(fd_r > max_fd)
+                //     max_fd = fd_r;
+                // int r2;
+                // if((r2 = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+                //     exit(-1);
+                // else if (r2 == 0)
+                //     std::cout << "Select Timeout" << std::endl;
+                // if(FD_ISSET(fd_r, &writeSet) == 0)
+                // {
+                //     showError(500, client);
+                //     break;
+                // }
+                // ==========================
+                
+                if((r = read(fd_r, file, lSize)) < 0)
+                {
+                    showError(500, client);
+                    break;
+                }
+            }
+        }
+        close(fd_r);
     }
-    int ret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
-    if(ret < 0)
-        showError(500, client);
-    else if(ret == 0)
-        showError(400, client);
+
 }
 
 void Server::rep_listing(int socket, std::string path, std::string fullurl, Client client)
@@ -234,23 +310,22 @@ bool Server::writewithpoll(std::string url, Client client, std::string str)
     }
 
     // ADD to write queue =================================
-    // FD_SET(fd, &readSet);
-    // if(fd > max_fd)
-    //     max_fd = fd;
-    // if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
-    //     exit(-1);
-    // else if (r == 0)
-    //     std::cout << "Select Timeout" << std::endl;
-    // if(FD_ISSET(fd, &writeSet) == 0)
-    // {
-    //     std::cout << "test2" << std::endl;
-    //     showError(500, client);
-    //     close(fd);
-    //     return false;
-    // }
+    FD_SET(fd, &writeSet);
+    if(fd > max_fd)
+        max_fd = fd;
+    if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+        exit(-1);
+    else if (r == 0)
+        std::cout << "Select Timeout" << std::endl;
+    if(FD_ISSET(fd, &writeSet) == 0)
+    {
+        showError(500, client);
+        close(fd);
+        return false;
+    }
     // =======================
 
-    r = write(fd, str.c_str(), str.size()); // ! get body dont work
+    r = write(fd, str.c_str(), str.size());
     if(r < 0)
     {
         showError(500, client);
@@ -273,24 +348,23 @@ bool Server::writewithpoll(std::string url, Client client, Requete req)
     }
 
     // ADD to write queue =================================
-    // FD_SET(fd, &readSet);
-    // if(fd > max_fd)
-    //     max_fd = fd;
-    // if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
-    //     exit(-1);
-    // else if (r == 0)
-    //     std::cout << "Select Timeout" << std::endl;
-    // if(FD_ISSET(fd, &writeSet) == 0)
-    // {
-    //     std::cout << "test2" << std::endl;
-    //     showError(500, client);
-    //     close(fd);
-    //     return false;
-    // }
+    FD_SET(fd, &writeSet);
+    if(fd > max_fd)
+        max_fd = fd;
+    if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+        exit(-1);
+    else if (r == 0)
+        std::cout << "Select Timeout" << std::endl;
+    if(FD_ISSET(fd, &writeSet) == 0)
+    {
+        showError(500, client);
+        close(fd);
+        return false;
+    }
     // =======================
 
     std::cout << colors::green << req.getFullBody() << std::endl;
-    r = write(fd, req.getFullBody().c_str(), req.getFullBody().size()); // ! get body dont work
+    r = write(fd, req.getFullBody().c_str(), req.getFullBody().size());
     if(r < 0)
     {
         showError(500, client);

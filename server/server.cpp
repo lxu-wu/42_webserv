@@ -70,7 +70,6 @@ void Server::waitClient()
 
 }
 
-
 void Server::acceptClient()
 {
     sockaddr_in addrclient;
@@ -94,8 +93,6 @@ void Server::acceptClient()
     }
 }
 
-
-
 void Server::handleRequest()
 {
     for(size_t i = 0; i < clients.size(); i++)
@@ -109,14 +106,6 @@ void Server::handleRequest()
                     MAX_REQUEST_SIZE - clients[i].requestSize, 0);
 
             clients[i].requestSize += Reqsize;
-
-            // if(clients[i].requestSize > MAX_REQUEST_SIZE)
-            // {
-            //     showError(413, clients[i]);
-            //     if(kill_client(clients[i]))
-            //         i--;
-            //     continue;
-            // }
             if (Reqsize < 0)
             {
                 std::cout << "Recv failed !" << std::endl;
@@ -133,13 +122,6 @@ void Server::handleRequest()
             else if(is_request_done(clients[i].request))
             {
                 Requete requete(clients[i].request);
-                // if(requete.err != -1)
-                // {
-                //     showError(requete.err, clients[i]);
-                //     if(kill_client(clients[i], requete))
-                //         i--;
-                //     continue;       
-                // }
                 int ret = -1;
                 if ((ret = requete.check_tim()) != -1)
                 {
@@ -156,6 +138,7 @@ void Server::handleRequest()
                     std::cout << query << std::endl;
                     urlrcv = urlrcv.substr(0, pos);
                 }
+                std::cout << requete.getLen() << std::endl;
                 if(requete.getLen() != std::string::npos && requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
                     showError(413, clients[i]);
