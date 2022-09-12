@@ -33,7 +33,7 @@ std::string searchExec(std::string filePwd, char **envp)
     return ("");
 }
 
-void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env, Servers &serv)
+void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env, Servers * serv)
 {
     {
         size_t  i = 0;
@@ -100,7 +100,7 @@ char **vecToTab(std::vector<std::string> &vec)
     return tab;
 }
 
-std::string execCGI(std::string filePwd, char **envp, Requete &req, Server &serv)
+std::string execCGI(std::string filePwd, char **envp, Requete &req, Servers * serv)
 {
     // filePwd = "./www/cgi_bin/upload.py"; // a enlever quand john m envoie tout le path
     std::string execPwd = searchExec(filePwd, envp);

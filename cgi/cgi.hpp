@@ -13,6 +13,6 @@
 #include "../parsing/webserv.hpp"
 #include "../parsing/requete.hpp"
 
-std::string execCGI(std::string filePwd, char **envp, Requete &req);
+std::string execCGI(std::string filePwd, char **envp, Requete &req, Servers * serv);
 
 #endif
