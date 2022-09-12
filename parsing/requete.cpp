@@ -14,9 +14,9 @@
 
 Requete::Requete(char *requete)
 {
-	std::ofstream MyFile("my_input.txt");
-	MyFile << requete;
-	MyFile.close();
+	// std::ofstream MyFile("my_input.txt");
+	// MyFile << requete;
+	// MyFile.close();
 	_char_request = requete;
 	std::stringstream ss(requete);
 	_request = requete;
@@ -165,7 +165,7 @@ void Requete::make_POST(std::stringstream& ss)
 				_body = _full_body;
 			else
 			{
-				make_body(ss, token);
+				//make_body(ss, token); //John Did it
 			}
 			break;
 		}
@@ -232,21 +232,6 @@ void Requete::make_query()
 	if (pos != std::string::npos)
 		_query= _url.substr(pos + 1);
 }
-
-
-// /* Print all data in requete */
-// void Requete::print_all_data()
-// {
-// 	std::cout << "Method    = " << _method << std::endl;
-// 	std::cout << "Url       = " << _url << std::endl;
-// 	std::cout << "Protocol  = " << _protocol << std::endl;
-// 	std::cout << "Boundary  = " << _boundary << std::endl;
-// 	std::cout << "Name      = " << _name << std::endl;
-// 	std::cout << "Filename  = " << _file_name << std::endl;
-// 	std::cout << "Type      = " << _type << std::endl;
-// 	//std::cout << "Body      = " << _body << std::endl;
-// 	//std::cout << "Full Body = " << _full_body << std::endl;
-// }
 
 /* Print text */
 void Requete::print_text()
