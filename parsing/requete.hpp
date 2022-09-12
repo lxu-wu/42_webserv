@@ -23,41 +23,6 @@
 # include <string.h>
 # include <fstream>
 
-/* 
-- find("\r\n\r\n")
-- Notes space are corect + /r/n/r/n
-*/
-
-/* 
-------WebKitFormBoundaryfBeADaUzEeiKFQHq
-Content-Disposition: form-data; name="file1"; filename=""
-Content-Type: application/octet-stream
-
-
-------WebKitFormBoundaryfBeADaUzEeiKFQHq--
-*/
-
-/* 
-------WebKitFormBoundarydjR69jSXKf1yW666
-Content-Disposition: form-data; name="firstname"
-
-kuy
-------WebKitFormBoundarydjR69jSXKf1yW666
-*/
-
-
-/* 
-A lot of inputs
-------WebKitFormBoundaryY0oueevpAE5GJ0OD
-Content-Disposition: form-data; name="firstname"
-
-htrh
-------WebKitFormBoundaryY0oueevpAE5GJ0OD
-Content-Disposition: form-data; name="firstname"
-
-rthrthr
-------WebKitFormBoundaryY0oueevpAE5GJ0OD--
-*/
 
 class Requete
 {

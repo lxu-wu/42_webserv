@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   conf.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jdecorte42 <jdecorte42@student.42.fr>      +#+  +:+       +#+        */
+/*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:12 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/09 23:07:07 by jdecorte42       ###   ########.fr       */
+/*   Updated: 2022/09/12 13:04:44 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,11 +40,6 @@ Conf::~Conf()
 /* --- FUNCTIONS --- */
 
 /* Check all data is correct */
-/* 
-	- root is a path
-	- index is a html file
-	- ERROR PAGE MISSING = 404 default
-*/
 void Conf::check_data()
 {
 	for (size_t i = 0; i < _servers.size(); i++)

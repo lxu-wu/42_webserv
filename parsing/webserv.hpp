@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/09 14:55:38 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/12 13:09:25 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,6 @@ class Conf
 
 
 /* Errors */
-/* Dont FORGET CHECK MAX INT */
 #define EXCEPTION public std::exception
 #define WHAT const char * what () const
 
