@@ -27,7 +27,6 @@ std::string searchExec(std::string filePwd, char **envp)
         std::cerr << "uncompatible CGI-script" << std::endl;
         return ("");
     }
-    std::cout << exec << std::endl;
     if (!access(exec.c_str(), X_OK))
         return exec;
     return ("");

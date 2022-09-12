@@ -132,7 +132,6 @@ std::string Server::getRootPatch(std::string urlrcv, int i)
     std::string urlroot = servers[i]->getRoot();
     if(urlroot[urlroot.size() - 1] == '/')
         urlroot.erase(urlroot.size() - 1, 1);
-    std::cout << (loc == NULL) << std::endl;
     if(loc && !(loc->getRoot().empty()))
         urlrcv.erase(urlrcv.find(loc->getDir()), urlrcv.find(loc->getDir()) + loc->getDir().size());
 
@@ -281,10 +280,7 @@ void Server::rep_listing(int socket, std::string path, std::string fullurl, Clie
     if ((dir = opendir (fullurl.c_str())) != NULL)
     {
         while ((ent = readdir (dir)) != NULL)
-        {
             tosend += "<a href=\"" + ((std::string(ent->d_name) == ".") ? std::string(path) : (std::string(path) + "/" + std::string(ent->d_name))) + "\">" + std::string(ent->d_name) + "</a>\n";
-            std::cout << path + "    "  +  std::string(ent->d_name) << std::endl;
-        }
         closedir (dir);
     }
     else

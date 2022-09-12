@@ -135,10 +135,8 @@ void Server::handleRequest()
                 if((pos = urlrcv.rfind("?")) != std::string::npos)
                 {
                     query = urlrcv.substr(pos, urlrcv.size());
-                    std::cout << query << std::endl;
                     urlrcv = urlrcv.substr(0, pos);
                 }
-                std::cout << requete.getLen() << std::endl;
                 if(requete.getLen() != std::string::npos && requete.getLen() > (size_t)stoi(servers[clients[i].getNServer()]->getBody()))
                 {
                     showError(413, clients[i]);
@@ -167,7 +165,6 @@ void Server::handleRequest()
                     if(rescgi.empty())
                         showError(404, clients[i]);
 
-                    std::cout << rescgi << std::endl;
                     rescgi = "HTTP/1.1 200 OK\nContent-Type: text/html\n\n" + rescgi;
                     int r = send(clients[i].getClientSocket(), rescgi.c_str(), rescgi.size(), 0);
                     if(r < 0)
@@ -177,8 +174,6 @@ void Server::handleRequest()
                 }
                 else
                 {
-                    // else if (clients[i].is_timeout())
-                    //     showError(408, clients[i]);
                     if(loc && !loc->getRedir().empty())
                         do_redir(clients[i], loc->getRedir());
                     else if (requete.getMethod() == "GET")
@@ -213,8 +208,6 @@ void Server::getMethod(Client &client, std::string urlrcv, Requete req)
     struct stat path_stat;
 
     std::string urlsend = getRootPatch(urlrcv, client.getNServer());
-
-    std::cout << urlsend << "   " << urlrcv << std::endl;
 
     if(loc && !(loc->getIndex().empty()) && (strcmp(urlrcv.c_str(), \
         loc->getDir().c_str()) == 0))
