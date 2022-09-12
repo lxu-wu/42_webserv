@@ -27,7 +27,7 @@ std::string searchExec(std::string filePwd, char **envp)
         std::cerr << "uncompatible CGI-script" << std::endl;
         return ("");
     }
-    std::cout << exec << std::endl;
+    // std::cout << exec << std::endl;
     if (!access(exec.c_str(), X_OK))
         return exec;
     return ("");
@@ -102,7 +102,6 @@ char **vecToTab(std::vector<std::string> &vec)
 
 std::string execCGI(std::string filePwd, char **envp, Requete &req, Servers * serv)
 {
-    // filePwd = "./www/cgi_bin/upload.py"; // a enlever quand john m envoie tout le path
     std::string execPwd = searchExec(filePwd, envp);
     if (execPwd == "")
     {
@@ -178,13 +177,8 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req, Servers * se
         }
         if (!req.getFullBody().empty())
         {
-            // std::cout << "~~~~~~~~~~~~~~~~~~~~\n";
-            // write(1, req.getFullBody().c_str(), req.getLen());
-            // std::cout << "~~~~~~~~~~~~~~~~~~~~\n";
             write(fd_in[1], req.getFullBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
         }
-        // write(fd_in[1], req.getBody().c_str(), 246);
-        // write(fd_in[1], "------WebKitFormBoundaryjmfNuyB4hX5Q2aW\nContent-Disposition: form-data; name=\"file1\"; filename=\"README.md\"\nContent-Type: application/octet-stream\n\n# 42_webserv\nON VA LE FAIRE TODAY I FINISH CGI\n------WebKitFormBoundaryjmfNuyB4hX5Q2aW--\n", 236);
         close(fd_in[0]);
         close(fd_in[1]);
         waitpid(pid, 0, 0);
