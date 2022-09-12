@@ -9,7 +9,7 @@ std::string fileExtent(std::string filePwd)
     while(i && filePwd[i] != '.')
         i--;
     if (!strcmp(&filePwd[i], ".py"))
-        return "/usr/local/bin/python2.7";
+        return "/usr/bin/python2.7";
     if (!strcmp(&filePwd[i], ".pl"))
         return "/usr/bin/perl";
     return "";
@@ -27,10 +27,7 @@ std::string searchExec(std::string filePwd, char **envp)
         std::cerr << "uncompatible CGI-script" << std::endl;
         return ("");
     }
-<<<<<<< HEAD
-=======
-    // std::cout << exec << std::endl;
->>>>>>> 7672be0e0135e5ed3818c1f8abc8b16117f574e7
+
     if (!access(exec.c_str(), X_OK))
         return exec;
     return ("");
@@ -141,10 +138,6 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req, Servers * se
 
     if (pid == 0)
     {
-        for(int i=0;my_env[i];i++)
-        {
-            std::cout << my_env[i] << std::endl;
-        }
         close(fd_in[1]);
         close(fd_out[0]);
         if (dup2(fd_in[0], 0) == -1)
