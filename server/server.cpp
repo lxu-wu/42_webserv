@@ -163,7 +163,7 @@ void Server::handleRequest()
                     std::cout << colors::blue << "CGI Start !" << colors::grey << std::endl;
 
                     std::string urlsend = getRootPatch(urlrcv, clients[i].getNServer());
-                    std::string rescgi = execCGI(urlsend, envp, requete);
+                    std::string rescgi = execCGI(urlsend, envp, requete, servers[clients[i].getNServer()]);
                     if(rescgi.empty())
                         showError(404, clients[i]);
 
