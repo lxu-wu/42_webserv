@@ -10,6 +10,7 @@
 #include <climits>
 #include <sys/stat.h>
 
+#include "../parsing/webserv.hpp"
 #include "../parsing/requete.hpp"
 
 std::string execCGI(std::string filePwd, char **envp, Requete &req);

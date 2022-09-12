@@ -33,7 +33,7 @@ std::string searchExec(std::string filePwd, char **envp)
     return ("");
 }
 
-void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env)
+void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env, Servers &serv)
 {
     {
         size_t  i = 0;
@@ -49,31 +49,35 @@ void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env)
         }
     }
     my_env.push_back("CONTENT_TYPE=" + req.getHeader()["Content-Type"]);
-    // my_env.push_back("CONTENT_TYPE=multipart/form-data; boundary=----WebKitFormBoundaryjmfNuyB4hX5Q2aW");
+    
     my_env.push_back("GATEWAY_INTERFACE=CGI/1.1");
+    
     char path[124] = {0};
     my_env.push_back("PATH_TRANSLATED=" + std::string(getcwd(path, 124)));
-    // my_env.push_back("PATH_TRANSLATED=/Users/lxu-wu/Desktop/42_webserv/upload.py");
+    
     if (!req.getQuery().empty())
         my_env.push_back("QUERY_STRING=" + req.getQuery());//getQS pour querry string
-    // my_env.push_back("QUERY_STRING=file1=README.md&");
-    my_env.push_back("REMOTE_ADDR=127.0.0.1");
    
     if (!req.getMethod().empty())
         my_env.push_back("REQUEST_METHOD=" + req.getMethod());
 
-    my_env.push_back("CONTENT_LENGTH=" + std::to_string(req.getLen()));
-    // my_env.push_back("CONTENT_LENGTH=246");
+    if (req.getLen())
+        my_env.push_back("CONTENT_LENGTH=" + std::to_string(req.getLen()));
+    
     if (!req.getProtocol().empty())
         my_env.push_back("SERVER_SOFTWARE=" + req.getProtocol());
-    my_env.push_back("SERVER_NAME=127.0.0.1");
+    
+    my_env.push_back("SERVER_NAME=" + serv.getName());
+    
     my_env.push_back("HTTP_ACCEPT=" + req.getHeader()["Accept"]);
-    // my_env.push_back("HTTP_ACCEPT=application/octet-stream");
+    
     my_env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.getHeader()["Accept-Language"]);
+    
     my_env.push_back("HTTP_USER_AGENT=" + req.getHeader()["User-Agent"]);
+    
     my_env.push_back("SCRIPT_NAME=" + req.getUrl());
+    
     my_env.push_back("HTTP_REFERER=" + req.getHeader()["Referer"]);
-    // my_env.push_back("SCRIPT_NAME=upload.py");
 }
 
 char **vecToTab(std::vector<std::string> &vec)
@@ -96,7 +100,7 @@ char **vecToTab(std::vector<std::string> &vec)
     return tab;
 }
 
-std::string execCGI(std::string filePwd, char **envp, Requete &req)
+std::string execCGI(std::string filePwd, char **envp, Requete &req, Server &serv)
 {
     // filePwd = "./www/cgi_bin/upload.py"; // a enlever quand john m envoie tout le path
     std::string execPwd = searchExec(filePwd, envp);
@@ -118,7 +122,7 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
     char **my_env;
 
     std::vector<std::string> env;
-    newEnv(envp, req, env);
+    newEnv(envp, req, env, serv);
     my_env = vecToTab(env);
 
     pipe(fd_in);
@@ -174,9 +178,9 @@ std::string execCGI(std::string filePwd, char **envp, Requete &req)
         }
         if (!req.getFullBody().empty())
         {
-            std::cout << "~~~~~~~~~~~~~~~~~~~~\n";
-            write(1, req.getFullBody().c_str(), req.getLen());
-            std::cout << "~~~~~~~~~~~~~~~~~~~~\n";
+            // std::cout << "~~~~~~~~~~~~~~~~~~~~\n";
+            // write(1, req.getFullBody().c_str(), req.getLen());
+            // std::cout << "~~~~~~~~~~~~~~~~~~~~\n";
             write(fd_in[1], req.getFullBody().c_str(), req.getLen());//req.getBody ou req.getBodyComplet
         }
         // write(fd_in[1], req.getBody().c_str(), 246);
