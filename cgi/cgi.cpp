@@ -67,7 +67,7 @@ void newEnv(char **envp, Requete &req, std::vector<std::string> &my_env, Servers
     if (!req.getProtocol().empty())
         my_env.push_back("SERVER_SOFTWARE=" + req.getProtocol());
     
-    my_env.push_back("SERVER_NAME=" + serv.getName());
+    my_env.push_back("SERVER_NAME=" + serv->getName());
     
     my_env.push_back("HTTP_ACCEPT=" + req.getHeader()["Accept"]);
     
