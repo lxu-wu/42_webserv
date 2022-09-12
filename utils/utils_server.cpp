@@ -183,7 +183,6 @@ void Server::showPage(Client client, std::string dir, int code)
         rewind (fd_s);
         fclose(fd_s);
 
-        char file[lSize];
         std::string type = find_type(dir);
 
         std::string msg = "HTTP/1.1 " + errors.find(code)->second + "\n" + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n";
@@ -203,23 +202,24 @@ void Server::showPage(Client client, std::string dir, int code)
         }
 
         // ADD to read queue =================================
-        // FD_SET(fd_r, &readSet);
-        // if(fd_r > max_fd)
-        //     max_fd = fd_r;
-        // if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
-        //     exit(-1);
-        // else if (r == 0)
-        //     std::cout << "Select Timeout" << std::endl;
-        // if(FD_ISSET(fd_r, &writeSet) == 0)
-        // {
-        //     showError(500, client);
-        //     close(fd_r);
-        //     return ;
-        // }
+        FD_SET(fd_r, &readSet);
+        if(fd_r > max_fd)
+            max_fd = fd_r;
+        if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+            exit(-1);
+        else if (r == 0)
+            std::cout << "Select Timeout" << std::endl;
+        if(FD_ISSET(fd_r, &readSet) == 0)
+        {
+            showError(400, client);
+            close(fd_r);
+            return ;
+        }
         // ==========================
 
+        char file[1024];
         int r2;
-        int r = read(fd_r, file, lSize);
+        int r = read(fd_r, file, 1024);
         if(r < 0)
             showError(500, client);
         else // Get big file
@@ -238,26 +238,29 @@ void Server::showPage(Client client, std::string dir, int code)
                 }
 
                 // ADD to read queue =================================
-                // FD_SET(fd_r, &readSet);
-                // if(fd_r > max_fd)
-                //     max_fd = fd_r;
-                // int r2;
-                // if((r2 = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
-                //     exit(-1);
-                // else if (r2 == 0)
-                //     std::cout << "Select Timeout" << std::endl;
-                // if(FD_ISSET(fd_r, &writeSet) == 0)
-                // {
-                //     showError(500, client);
-                //     break;
-                // }
+                FD_SET(fd_r, &readSet);
+                if(fd_r > max_fd)
+                    max_fd = fd_r;
+                int r2;
+                if((r2 = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+                    exit(-1);
+                else if (r2 == 0)
+                    std::cout << "Select Timeout" << std::endl;
+                if(FD_ISSET(fd_r, &readSet) == 0)
+                {
+                    showError(400, client);
+                    break;
+                }
                 // ==========================
                 
-                if((r = read(fd_r, file, lSize)) < 0)
+
+                if((r = read(fd_r, file, 1024)) < 0)
                 {
                     showError(500, client);
                     break;
                 }
+                if(r == 0)
+                    break;
             }
         }
         close(fd_r);
