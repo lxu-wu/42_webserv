@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:12 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/12 13:04:44 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/13 16:18:18 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,8 @@ void Conf::check_data()
 			throw IndexLoc();
 		if (!_servers[i]->check_listing())
 			throw ListingErr();
+		if (!_servers[i]->check_client_size())
+			throw SizeErr();
 	}
 	
 }
