@@ -28,7 +28,7 @@ class Requete
 {
 	public:
 		Requete(char *requete);
-		~Requete() {};
+		~Requete();
 
 		/* Getters */
 		std::string							getMethod() const	{return _method;};

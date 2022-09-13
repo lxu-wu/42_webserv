@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:12 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/13 16:18:18 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/13 19:19:04 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,9 @@ Conf::~Conf()
 		delete _servers[i];
 	}
 	_servers.clear();
+	_file.clear();
+	_file_pos.clear();
+	_directives.clear();
 }
 
 

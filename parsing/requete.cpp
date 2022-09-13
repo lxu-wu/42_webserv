@@ -31,6 +31,12 @@ Requete::Requete(char *requete)
 		make_POST(ss);
 }
 
+Requete::~Requete()
+{
+	_header.clear();
+	_text.clear();
+}
+
 /* Check if request is good */
 int Requete::check_tim()
 {

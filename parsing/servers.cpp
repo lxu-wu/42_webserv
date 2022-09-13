@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:15 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/13 16:26:33 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/13 19:20:09 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ Servers::~Servers()
 		delete _locations[i];
 	}
 	_locations.clear();
+	_method.clear();
+	_error.clear();
 }
 
 /* Functions */

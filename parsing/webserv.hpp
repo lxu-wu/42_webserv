@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/13 16:18:16 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/13 19:20:40 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ class Location
 {
 	public:
 		Location() {;};
-		~Location() {;};
+		~Location() {_method.clear();};
 		
 		/* Setteres */
 		void setDir(std::string word)		{_dir = word;};
