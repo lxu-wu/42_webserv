@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/09 15:53:02 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/12 13:09:25 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/13 16:18:16 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,6 +114,7 @@ class Servers
 		bool check_index();
 		bool check_listing();
 		bool check_locations();
+		bool check_client_size();
 
 	private:
 		std::string							_listen;
@@ -177,5 +178,6 @@ class RequestErr : EXCEPTION {WHAT throw () { return ("Error: Request method wro
 class RootErr : EXCEPTION {WHAT throw () { return ("Error: In root path"); }};
 class IndexLoc : EXCEPTION {WHAT throw () { return ("Error: Missing index in location"); }};
 class ListingErr : EXCEPTION {WHAT throw () { return ("Error: Dir_listing must be on or off"); }};
+class SizeErr : EXCEPTION {WHAT throw () { return ("Error: Client size"); }};
 
 #endif

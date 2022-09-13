@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   servers.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jdecorte42 <jdecorte42@student.42.fr>      +#+  +:+       +#+        */
+/*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:15 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/09 23:07:44 by jdecorte42       ###   ########.fr       */
+/*   Updated: 2022/09/13 16:26:33 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,19 @@ Servers::~Servers()
 }
 
 /* Functions */
+/* look for 2 147 483 647*/
+bool Servers::check_client_size()
+{
+	size_t save = 0;
+	
+	if (_body_size.size() > 10)
+		return false;
+	save = atoi(_body_size.c_str());
+	if (save > 2147483647)
+		return false;
+	return true;
+}
+
 /* check locations are not empty */
 bool Servers::check_locations()
 {
