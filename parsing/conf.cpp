@@ -50,7 +50,7 @@ void Conf::check_data()
 			throw DirMissing();
 		if (!_servers[i]->check_locations())
 			throw DirMissing();
-		if (!my_atoi(_servers[i]->getListen()) || !my_atoi(_servers[i]->getBody()))
+		if (_servers[i]->getListen().size() > 4 || !my_atoi(_servers[i]->getListen()) || !my_atoi(_servers[i]->getBody()))
 			throw NotINT();
 		if (!_servers[i]->check_error_page())
 			throw ErrorPage();
@@ -280,4 +280,6 @@ void Conf::read_file(std::string name)
 			}
 		}
 	}
+	if (_file.empty())
+		throw DirMissing();
 }

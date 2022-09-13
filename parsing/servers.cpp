@@ -61,6 +61,8 @@ bool Servers::check_locations()
 /* check if all locations have index*/
 bool Servers::check_index()
 {
+	if (_index.find(".html") == std::string::npos)
+		return false;
 	for (size_t i = 0; i < _locations.size(); i++)
 	{
 		if (_locations[i]->getIndex().empty())
