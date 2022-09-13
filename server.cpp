@@ -2,48 +2,37 @@
 #include "../parsing/requete.hpp"
 #include "../parsing/webserv.hpp"
 
-bool is_request_done(char *request, size_t header_size, size_t sizereq)
+bool is_request_done(char *request)
 {
-    size_t sizebody = sizereq - header_size;
-
 	char *body = strstr(request, "\r\n\r\n");
 	if (!body)
 		return false;
 	body += 4;
-	if (strnstr(request, "chunked", sizereq - sizebody))
+	if (strnstr(request, "chunked", strlen(request) - strlen(body)))
 	{
 		if (strstr(body, "\r\n\r\n"))
-        {
-            std::cout << "caca 1" << std::endl;
 			return true;
-        }
 		return false;
 	}
-	else if (strnstr(request, "Content-Length", sizereq - sizebody))
+	else if (strnstr(request, "Content-Length", strlen(request) - strlen(body)))
 	{
-		char *start = strnstr(request, "Content-Length: ", sizereq - sizebody) + 16;
+		if (strstr(body, "\r\n\r\n"))
+			return true;
+		char *start = strnstr(request, "Content-Length: ", strlen(request) - strlen(body)) + 16;
 		char *end = strstr(start, "\r\n");
 		char *len = strndup(start, end - start);
 		int len_i = atoi(len);
 		free(len);
-		if ((size_t)len_i <= sizebody)
-        {
-            std::cout << "caca 2" << std::endl;
-
+		if ((size_t)len_i <= strlen(body))
 			return true;
-        }
 		return false;
 	}
-	else if (strnstr(request, "boundary=", sizereq - sizebody))
+	else if (strnstr(request, "boundary=", strlen(request) - strlen(body)))
 	{
 		if (strstr(body, "\r\n\r\n"))
-        {
-            std::cout << "caca 3" << std::endl;
 			return true;
-        }
 		return false;
 	}
-    std::cout << "on est nullllllllllll" << std::endl;
 	return true;
 }
 
@@ -113,13 +102,11 @@ void Server::handleRequest()
             std::cout << colors::bright_cyan << "New Request ! : ";
 
             int Reqsize = recv(clients[i].getClientSocket(), clients[i].request, MAX_REQUEST_SIZE, 0);
+            std::cout << Reqsize << std::endl;
             clients[i].requestSize += Reqsize;
-
-            for (size_t size = 0; size < Reqsize; size++)
+            for (int size = 0; size < Reqsize; size++)
                 clients[i].final_request.push_back(clients[i].request[size]);
 
-            int header_size = clients[i].final_request.find("\r\n\r\n", 0);
-            header_size += 4;
 
             if (Reqsize < 0)
             {
@@ -134,9 +121,11 @@ void Server::handleRequest()
                 kill_client(clients[i]);
                 i--;
             }
-            else if(is_request_done((char *)clients[i].final_request.c_str(), header_size, clients[i].requestSize))
+            else if(is_request_done((char *)clients[i].final_request.c_str()))
             {
+                write(open("caca.txt", O_CREAT | O_RDWR), clients[i].final_request.c_str(), clients[i].requestSize + 2);
                 Requete requete((char*)clients[i].final_request.c_str());
+                std::cout << "1\n";
                 int ret = -1;
                 if ((ret = requete.check_tim()) != -1)
                 {
@@ -162,9 +151,8 @@ void Server::handleRequest()
                 
                 loc = getLocation(urlrcv, clients[i].getNServer());
 
-                if(!((loc == NULL) ? is_allowed(servers[clients[i].getNServer()]->getMethod(),
-                    requete.getMethod()) : is_allowed(loc->getMethod(), requete.getMethod()))
-                        && urlrcv.find("cgi_bin") == std::string::npos)
+                if(!((loc == NULL) ? is_allowed(servers[clients[i].getNServer()]->getMethod(), \
+                    requete.getMethod()) : is_allowed(loc->getMethod(), requete.getMethod())))
                 {
                     std::cout << "Unautorised Method " << requete.getMethod() << " !" << std::endl;
                     showError(405, clients[i]);

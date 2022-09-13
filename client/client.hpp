@@ -6,6 +6,7 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <fcntl.h>
+#include <iostream>
 
 #define MAX_REQUEST_SIZE 65536
 
@@ -37,6 +38,7 @@ class Client
         int requestSize;
         char request[MAX_REQUEST_SIZE + 1];
         size_t last_time;
+        std::string final_request;
 
     private :
         int clientSocket;
