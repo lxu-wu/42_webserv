@@ -13,10 +13,7 @@ bool is_request_done(char *request, size_t header_size, size_t sizereq)
 	if (strnstr(request, "chunked", sizereq - sizebody))
 	{
 		if (strstr(body, "\r\n\r\n"))
-        {
-            std::cout << "caca 1" << std::endl;
 			return true;
-        }
 		return false;
 	}
 	else if (strnstr(request, "Content-Length", sizereq - sizebody))
@@ -27,23 +24,15 @@ bool is_request_done(char *request, size_t header_size, size_t sizereq)
 		int len_i = atoi(len);
 		free(len);
 		if ((size_t)len_i <= sizebody)
-        {
-            std::cout << "caca 2" << std::endl;
-
 			return true;
-        }
 		return false;
 	}
 	else if (strnstr(request, "boundary=", sizereq - sizebody))
 	{
 		if (strstr(body, "\r\n\r\n"))
-        {
-            std::cout << "caca 3" << std::endl;
 			return true;
-        }
 		return false;
 	}
-    std::cout << "on est nullllllllllll" << std::endl;
 	return true;
 }
 
@@ -110,7 +99,6 @@ void Server::handleRequest()
     {
         if(FD_ISSET(clients[i].getClientSocket(), &readSet))
         {
-            std::cout << colors::bright_cyan << "New Request ! : ";
 
             int Reqsize = recv(clients[i].getClientSocket(), clients[i].request, MAX_REQUEST_SIZE, 0);
             clients[i].requestSize += Reqsize;
@@ -136,6 +124,7 @@ void Server::handleRequest()
             }
             else if(is_request_done((char *)clients[i].final_request.c_str(), header_size, clients[i].requestSize))
             {
+                std::cout << colors::bright_cyan << "== New Request ! ==" << std::endl;
                 Requete requete((char*)clients[i].final_request.c_str());
                 int ret = -1;
                 if ((ret = requete.check_tim()) != -1)
@@ -259,20 +248,20 @@ void Server::getMethod(Client &client, std::string urlrcv, Requete req)
     }
 }
 
-void Server::deleteMethod(Client &client, std::string url)
+void Server::deleteMethod(Client &client, std::string urlrcv)
 {
     std::cout << colors::bright_yellow << "DELETE Method !" << std::endl;
-    url = getRootPatch(url, client.getNServer());
+    std::string urlsend = getRootPatch(urlrcv, client.getNServer());
 
 
-    FILE *fd = fopen(url.c_str(), "r");
+    FILE *fd = fopen(urlsend.c_str(), "r");
     if(!fd)
     {
         showError(404, client);
         return ;
     }
     fclose(fd);
-    std::remove(url.c_str());
+    std::remove(urlsend.c_str());
 
     std::string tosend = "HTTP/1.1 200 OK\n";
     int ret = send(client.getClientSocket() ,tosend.c_str(), tosend.size(), 0);
@@ -280,7 +269,7 @@ void Server::deleteMethod(Client &client, std::string url)
         showError(500, client);
     else if (ret == 0)
 		showError(400, client);
-    std::cout << colors::green << url << " as been delete !" << std::endl;
+    std::cout << colors::green << urlsend << " as been delete !" << std::endl;
 }
 
 void Server::postMethod(Client client, std::string url, Requete req)
