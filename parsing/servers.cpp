@@ -6,7 +6,7 @@
 /*   By: tmartial <tmartial@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/31 14:41:15 by tmartial          #+#    #+#             */
-/*   Updated: 2022/09/13 16:26:33 by tmartial         ###   ########.fr       */
+/*   Updated: 2022/09/13 16:36:15 by tmartial         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ bool Servers::check_client_size()
 	size_t save = 0;
 	
 	if (_body_size.size() > 10)
+		return false;
+	if (_listen.size() > 4)
 		return false;
 	save = atoi(_body_size.c_str());
 	if (save > 2147483647)
