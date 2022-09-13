@@ -1,7 +1,0 @@
-GET /index.html HTTP/1.1
-Host: localhost:4040
-Accept: */*
-Accept-Encoding: gzip, deflate
-User-Agent: Mozilla/5.0 (apple-arm-darwin21.5.0) Siege/4.1.5
-Connection: close
-
