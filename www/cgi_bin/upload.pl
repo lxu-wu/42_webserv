@@ -5,7 +5,7 @@ my $q = CGI->new;
 my $lightweight_fh  = $q->upload('file1');
 my $filename = $q->param('file1');
 
-my $dir = 'server/uploads/';
+my $dir = 'dossier/uploads/';
 
 my $msg;
 

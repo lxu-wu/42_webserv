@@ -23,7 +23,7 @@ form = cgi.FieldStorage()
 
 fileitem = form['file1']
 
-path = "./dossier"
+path = "./dossier/"
 
 isExist = os.path.exists(path)
 
