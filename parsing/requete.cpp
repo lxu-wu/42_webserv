@@ -123,9 +123,20 @@ void Requete::make_POST(std::stringstream& ss)
 	std::string buff;
 	size_t pos = _request.find("\r\n\r\n");
 
+	// if (pos != std::string::npos)
+	// {
+	// 	std::cout << "RE = " << _request << std::endl;
+	// 	std::cout << "NOT RNRN = " << _request[pos - 7] << std::endl;
+	// 	std::cout << "NOT RNRN = " << _request[pos - 6] << std::endl;
+	// 	std::cout << "NOT RNRN = " << _request[pos - 5] << std::endl;
+	// 	std::cout << "NOT RNRN = " << _request[pos - 4] << std::endl;
+	// 	std::cout << "NOT RNRN = " << _request[pos - 3] << std::endl;
+	// 	std::cout << "NOT RNRN = " << _request[pos - 2] << std::endl;
+	// 	std::cout << "NOT RNRN = " << _request[pos - 1] << std::endl;
+	// }
 	while (ss >> token)
 	{
-		// std::cout << "Token = " << token << std::endl;
+		//std::cout << "Token = " << token << std::endl;
 		if (token.find("boundary=") != std::string::npos)
 		{
 			_boundary = token.substr(token.find("boundary=") + 9);
@@ -145,7 +156,7 @@ void Requete::make_POST(std::stringstream& ss)
 			_len = atoi(token.c_str());
 			key.clear();
 		}
-		else if (_request.find(token) == pos - token.length())
+		else if (_request.find(token) >= pos - token.length())
 		{
 			pos += 4;
 			if (!key.empty() && key != token)
@@ -162,7 +173,7 @@ void Requete::make_POST(std::stringstream& ss)
 				}
 			}
 			size_t pos_header = pos;
-			while (pos < _len + pos_header - 1)// || _request[pos + 1]
+			while (pos < _len + pos_header)//JOHN IL FAUT CHIPOTE ICI
 			{
 				_full_body += _char_request[pos];
 				pos++;
@@ -173,6 +184,7 @@ void Requete::make_POST(std::stringstream& ss)
 			{
 				//make_body(ss, token); //John Did it
 			}
+			std::cout << "FULL BODY = " << _full_body << std::endl;
 			break;
 		}
 		else if (token.back() == ':')
