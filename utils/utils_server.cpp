@@ -178,13 +178,11 @@ void Server::showPage(Client client, std::string dir, int code)
     {
         FILE *fd_s = fopen(dir.c_str(), "rb");
         fseek (fd_s , 0, SEEK_END);
-        int lSize = ftell (fd_s);
+        size_t lSize = ftell (fd_s);
         rewind (fd_s);
         fclose(fd_s);
 
         std::string type = find_type(dir);
-
-        std::string msg = "HTTP/1.1 " + errors.find(code)->second + "\n" + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n";
 
         int fd_r = open(dir.c_str(), O_RDONLY);
         if (fd_r < 0)
@@ -193,13 +191,31 @@ void Server::showPage(Client client, std::string dir, int code)
             return ;
         }
 
-        char file[1024];
+        char buffer[1024];
+        std::string file;
         int r2;
-        int r = read(fd_r, file, 1024);
+        int r = read(fd_r, buffer, 1024);
         if(r < 0)
             showError(500, client);
+        while(r)
+        {
+            r = read(fd_r, buffer, 1024);
+            if(r < 0)
+            {
+                showError(500, client);
+                close(fd_r);
+                return ;
+            }
+            if(r == 0)
+                break;
+            file += std::string(buffer);
+        }
 
-        if((r2 = send(client.getClientSocket(), file, r, 0)) < 0)
+        std::string msg = "HTTP/1.1 " + errors.find(code)->second + "\n" + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n";
+        msg += file;
+
+        std::cout << msg.size() << std::endl;
+        if((r2 = send(client.getClientSocket(), msg.c_str(), msg.size(), 0)) < 0)
         {
             showError(500, client);
             close(fd_r);
@@ -211,13 +227,6 @@ void Server::showPage(Client client, std::string dir, int code)
             close(fd_r);
             return ;
         }
-
-
-        int ret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
-        if(ret < 0)
-            showError(500, client);
-        else if(ret == 0)
-            showError(400, client);
     }
 
 }
