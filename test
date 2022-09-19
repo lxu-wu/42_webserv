@@ -33,7 +33,6 @@ void Server::initServer()
 
 void Server::showError(int err, Client &client)
 {
-    int errbool = 0;
     std::map<std::string , std::string> errpages = servers[client.getNServer()]->getError();
     if(errpages.find(std::to_string(err)) != errpages.end())
     {
@@ -42,39 +41,38 @@ void Server::showError(int err, Client &client)
         {
             std::cout << colors::on_bright_red << "Show error : " << errors[err] << " !" << colors::on_grey << std::endl;
             std::cout << colors::on_bright_red << "Pre-Config Error Page don't exist : " << errpages[std::to_string(err)] << colors::on_grey << std::endl;
+            close(fd);
             return ;
         }
-        char buffer[5000];
-        int r = read(fd, buffer, 5000);
-        if(r < 0)
-        {
-            close(fd);
-            exit(-1);
-        }
-        std::string msg = "HTTP/1.1 " + errpages[std::to_string(200)] + "\nContent-Type: text/html\nContent-Length: " + std::to_string(strlen(buffer)) + "\r\n\r\n" + buffer + "\n";
-        int sendret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
-        if(sendret < 0)
-            close(fd);
-        else if (sendret == 0)
-            close(fd);
         close(fd);
+        showPage(client, errpages[std::to_string(err)], 200);
     }
-    std::map<int , std::string>::iterator it = errors.find(err);
-    if(it != errors.end())
+    else
     {
-        std::cout << colors::on_bright_red << "Show error : " << it->second << " !" << colors::on_grey << std::endl;
-        std::string msg = "HTTP/1.1 " + it->second + "\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
-        int sendret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
-        if(sendret < 0)
-            std::cout << "Client disconnected" << std::endl;
-        else if (sendret == 0)
-            std::cout << "0 byte passed to server" << std::endl;
+        std::map<int , std::string>::iterator it = errors.find(err);
+        if(it != errors.end())
+        {
+            std::cout << colors::on_bright_red << "Show error : " << it->second << " !" << colors::on_grey << std::endl;
+            std::string msg = "HTTP/1.1 " + it->second + "\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
+            int sendret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+            if(sendret < 0)
+                std::cout << "Client disconnected" << std::endl;
+            else if (sendret == 0)
+                std::cout << "0 byte passed to server" << std::endl;
+        }
     }
 }
 
 
 bool Server::kill_client(Client client, Requete req)
 {
+    // Keep alive connection
+    // if(req.getHeader().find("Connection") != req.getHeader().end())
+    // {
+    //     if (req.getHeader()["Connection"] == "keep-alive")
+    //         return false;
+    // }
+    // close + erase client
     close(client.getClientSocket());
     for(size_t i = 0; i < clients.size(); i++)
     {
@@ -159,6 +157,7 @@ bool Server::is_cgi(std::string filename)
     return false;
 }
 
+
 void Server::showPage(Client client, std::string dir, int code)
 {
     int r;
@@ -177,23 +176,25 @@ void Server::showPage(Client client, std::string dir, int code)
     }
     else
     {
+        static int a = 0;
+
         FILE *fd_s = fopen(dir.c_str(), "rb");
         fseek (fd_s , 0, SEEK_END);
         int lSize = ftell (fd_s);
         rewind (fd_s);
         fclose(fd_s);
 
-        std::string type = find_type(dir);
-
-        std::string msg = "HTTP/1.1 " + errors.find(code)->second + "\n" + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n";
-        int ret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
-        if(ret < 0)
-            showError(500, client);
-        else if(ret == 0)
-            showError(400, client);
-
-
-
+        if(a == 0)
+        {
+            std::string type = find_type(dir);
+            std::string msg = "HTTP/1.1 " + errors.find(code)->second + "\n" + "Content-Type: " + type + "\nContent-Length: " + std::to_string(lSize) + "\n\n";
+            int ret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+            if(ret < 0)
+                showError(500, client);
+            else if(ret == 0)
+                showError(400, client);
+            a += 1;
+        }
         int fd_r = open(dir.c_str(), O_RDONLY);
         if (fd_r < 0)
         {
@@ -201,38 +202,43 @@ void Server::showPage(Client client, std::string dir, int code)
             return ;
         }
 
-        char file[MAX_REQUEST_SIZE];
+        // // ADD to read queue =================================
+        // FD_SET(fd_r, &readSet);
+        // if(fd_r > max_fd)
+        //     max_fd = fd_r;
+        // if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
+        //     exit(-1);
+        // else if (r == 0)
+        //     std::cout << "Select Timeout" << std::endl;
+        // if(FD_ISSET(fd_r, &readSet) == 0)
+        // {
+        //     showError(400, client);
+        //     close(fd_r);
+        //     return ;
+        // }
+        // // ==========================
+
+        char file[MAX_REQUEST_SIZE + 1] = {0};
         int r2;
         int r = read(fd_r, file, MAX_REQUEST_SIZE);
         if(r < 0)
             showError(500, client);
-        else // Get big file
+        if((r2 = send(client.getClientSocket(), file, r, 0)) < 0)
         {
-            while(r)
-            {
-                if((r2 = send(client.getClientSocket(), file, r, 0)) < 0)
-                {
-                    showError(500, client);
-                    break;
-                }
-                else if (r2 == 0)
-                {
-                    showError(400, client);
-                    break;
-                }
+            showError(500, client);
+            return ;
 
-                if((r = read(fd_r, file, MAX_REQUEST_SIZE)) < 0)
-                {
-                    showError(500, client);
-                    break;
-                }
-                if(r == 0)
-                    break;
-            }
         }
-        close(fd_r);
-    }
+        else if (r2 == 0)
+        {
+            showError(400, client);
+            return ;
+        }
 
+    
+        if(r == 0)
+            a = 0;
+    }
 }
 
 void Server::rep_listing(int socket, std::string path, std::string fullurl, Client client)
