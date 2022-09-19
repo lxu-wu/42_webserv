@@ -48,73 +48,6 @@ int Requete::check_tim()
 }
 
 
-/* check if content start */
-void Requete::make_body(std::stringstream& ss, std::string token)
-{
-	size_t pos = _request.find("\r\n\r\n") + 4, pos_body = 0;
-	std::string save = _request.substr(pos);
-
-	/* ONE BODY */
-	if (save.find("filename=") != std::string::npos)
-	{
-		ss >> token;//boundary
-		ss >> token;//Content-Disposition:
-		ss >> token;//form-data;
-		ss >> token;//name="file1";
-		_name = token.substr(token.find("="));
-		if (_name.back() == ';')
-			_name.pop_back();//remove ;
-		_name.pop_back();//remove " at end
-		_name.erase(0, 2);//remove " at begin
-		ss >> token;
-
-		_file_name = token.substr(token.find("="));
-		_file_name.pop_back();//remove " at end
-		_file_name.erase(0, 2);//remove " at begin
-		ss >> token;
-		if (token.find("Content-Type:") != std::string::npos)
-		{
-			ss >> token;
-			_type = token;
-		}
-	}
-	else /* MORE BODYS */
-	{
-		ss >> token;
-		while (!save.empty())
-		{
-			_text.push_back("NewFile");
-			ss >> token;//Content-Disposition:
-			ss >> token;//form-data;
-			_text.push_back(token);
-			ss >> token;//name="file1";
-			save.erase(0, save.find(token) + token.length() + 4);
-			_name = token.substr(token.find("="));
-			if (_name.back() == ';')
-				_name.pop_back();//remove ;
-			_name.pop_back();//remove " at end
-			_name.erase(0, 2);//remove " at begin
-			_text.push_back(_name);
-			while (token.find(_boundary) == std::string::npos) //Advance till next boundary
-				ss >> token;
-			_body = save.substr(0, save.find(_boundary) - 3);
-			_text.push_back(_body);
-			_body.clear();
-			if (save[save.find(_boundary) + _boundary.size()] == '-')//End of body
-				break;
-		}
-		//print_text();
-	}
-
-	/* Make full body */
-	pos_body = pos;
-	while (pos < _len + pos_body)
-	{
-		_body += _char_request[pos];
-		pos++;
-	}
-		
-}
 
 /* Make post request */
 void Requete::make_POST(std::stringstream& ss)
@@ -123,20 +56,9 @@ void Requete::make_POST(std::stringstream& ss)
 	std::string buff;
 	size_t pos = _request.find("\r\n\r\n");
 
-	// if (pos != std::string::npos)
-	// {
-	// 	std::cout << "RE = " << _request << std::endl;
-	// 	std::cout << "NOT RNRN = " << _request[pos - 7] << std::endl;
-	// 	std::cout << "NOT RNRN = " << _request[pos - 6] << std::endl;
-	// 	std::cout << "NOT RNRN = " << _request[pos - 5] << std::endl;
-	// 	std::cout << "NOT RNRN = " << _request[pos - 4] << std::endl;
-	// 	std::cout << "NOT RNRN = " << _request[pos - 3] << std::endl;
-	// 	std::cout << "NOT RNRN = " << _request[pos - 2] << std::endl;
-	// 	std::cout << "NOT RNRN = " << _request[pos - 1] << std::endl;
-	// }
 	while (ss >> token)
 	{
-		//std::cout << "Token = " << token << std::endl;
+		// std::cout << "Token = " << token << std::endl;
 		if (token.find("boundary=") != std::string::npos)
 		{
 			_boundary = token.substr(token.find("boundary=") + 9);
@@ -173,7 +95,7 @@ void Requete::make_POST(std::stringstream& ss)
 				}
 			}
 			size_t pos_header = pos;
-			while (pos < _len + pos_header)//JOHN IL FAUT CHIPOTE ICI
+			while (pos < _len + pos_header)// || _request[pos + 1]
 			{
 				_full_body += _char_request[pos];
 				pos++;
@@ -184,7 +106,6 @@ void Requete::make_POST(std::stringstream& ss)
 			{
 				//make_body(ss, token); //John Did it
 			}
-			std::cout << "FULL BODY = " << _full_body << std::endl;
 			break;
 		}
 		else if (token.back() == ':')

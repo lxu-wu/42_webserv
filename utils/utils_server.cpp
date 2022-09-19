@@ -33,7 +33,6 @@ void Server::initServer()
 
 void Server::showError(int err, Client &client)
 {
-    int errbool = 0;
     std::map<std::string , std::string> errpages = servers[client.getNServer()]->getError();
     if(errpages.find(std::to_string(err)) != errpages.end())
     {
@@ -42,39 +41,32 @@ void Server::showError(int err, Client &client)
         {
             std::cout << colors::on_bright_red << "Show error : " << errors[err] << " !" << colors::on_grey << std::endl;
             std::cout << colors::on_bright_red << "Pre-Config Error Page don't exist : " << errpages[std::to_string(err)] << colors::on_grey << std::endl;
+            close(fd);
             return ;
         }
-        char buffer[5000];
-        int r = read(fd, buffer, 5000);
-        if(r < 0)
-        {
-            close(fd);
-            exit(-1);
-        }
-        std::string msg = "HTTP/1.1 " + errpages[std::to_string(200)] + "\nContent-Type: text/html\nContent-Length: " + std::to_string(strlen(buffer)) + "\r\n\r\n" + buffer + "\n";
-        int sendret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
-        if(sendret < 0)
-            close(fd);
-        else if (sendret == 0)
-            close(fd);
         close(fd);
+        showPage(client, errpages[std::to_string(err)], 200);
     }
-    std::map<int , std::string>::iterator it = errors.find(err);
-    if(it != errors.end())
+    else
     {
-        std::cout << colors::on_bright_red << "Show error : " << it->second << " !" << colors::on_grey << std::endl;
-        std::string msg = "HTTP/1.1 " + it->second + "\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
-        int sendret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
-        if(sendret < 0)
-            std::cout << "Client disconnected" << std::endl;
-        else if (sendret == 0)
-            std::cout << "0 byte passed to server" << std::endl;
+        std::map<int , std::string>::iterator it = errors.find(err);
+        if(it != errors.end())
+        {
+            std::cout << colors::on_bright_red << "Show error : " << it->second << " !" << colors::on_grey << std::endl;
+            std::string msg = "HTTP/1.1 " + it->second + "\nContent-Type: text/plain\nContent-Length: " + std::to_string(it->second.size()) + "\n\n" + it->second + "\n";
+            int sendret = send(client.getClientSocket() , msg.c_str(), msg.size(), 0);
+            if(sendret < 0)
+                std::cout << "Client disconnected" << std::endl;
+            else if (sendret == 0)
+                std::cout << "0 byte passed to server" << std::endl;
+        }
     }
 }
 
 
 bool Server::kill_client(Client client, Requete req)
 {
+    (void)req;
     close(client.getClientSocket());
     for(size_t i = 0; i < clients.size(); i++)
     {
@@ -159,6 +151,7 @@ bool Server::is_cgi(std::string filename)
     return false;
 }
 
+
 void Server::showPage(Client client, std::string dir, int code)
 {
     int r;
@@ -201,9 +194,15 @@ void Server::showPage(Client client, std::string dir, int code)
             return ;
         }
 
-        char file[MAX_REQUEST_SIZE];
+        // ADD to read queue =================================
+        addtowait(fd_r, &readSet);
+        selectfd(&readSet, &writeSet);
+
+        // ==========================
+
+        char file[1024];
         int r2;
-        int r = read(fd_r, file, MAX_REQUEST_SIZE);
+        int r = read(fd_r, file, 1024);
         if(r < 0)
             showError(500, client);
         else // Get big file
@@ -221,7 +220,13 @@ void Server::showPage(Client client, std::string dir, int code)
                     break;
                 }
 
-                if((r = read(fd_r, file, MAX_REQUEST_SIZE)) < 0)
+                // ADD to read queue =================================
+                addtowait(fd_r, &readSet);
+                selectfd(&readSet, &writeSet);
+                // ==========================
+                
+
+                if((r = read(fd_r, file, 1024)) < 0)
                 {
                     showError(500, client);
                     break;
@@ -276,6 +281,11 @@ bool Server::writewithpoll(std::string url, Client client, std::string str)
         return false;
     }
 
+    // ADD to write queue =================================
+    addtowait(fd, &writeSet);
+    selectfd(&readSet, &writeSet);
+    // =======================
+
     r = write(fd, str.c_str(), str.size());
     if(r < 0)
     {
@@ -297,6 +307,11 @@ bool Server::writewithpoll(std::string url, Client client, Requete req)
         close(fd);
         return false;
     }
+
+    // ADD to write queue =================================
+    addtowait(fd, &writeSet);
+    selectfd(&readSet, &writeSet);
+    // =======================
 
     std::cout << colors::green << req.getFullBody() << std::endl;
     r = write(fd, req.getFullBody().c_str(), req.getFullBody().size());

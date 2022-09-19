@@ -46,7 +46,6 @@ class Server
         void selectfd(fd_set *read, fd_set *write);
         bool writewithpoll(std::string url, Client client, Requete req);
         bool writewithpoll(std::string url, Client client, std::string str);
-        void showPageForError(Client client, std::string dir, int code);
 
 
         std::string getRootPatch(std::string url, int i);
@@ -73,7 +72,6 @@ class Server
         fd_set writeSet;
 
         Location *loc;
-
         std::string query;
 
     private :

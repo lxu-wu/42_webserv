@@ -100,7 +100,7 @@ void Server::handleRequest()
         if(FD_ISSET(clients[i].getClientSocket(), &readSet))
         {
 
-            int Reqsize = recv(clients[i].getClientSocket(), clients[i].request, MAX_REQUEST_SIZE, 0);
+            size_t Reqsize = recv(clients[i].getClientSocket(), clients[i].request, MAX_REQUEST_SIZE, 0);
             clients[i].requestSize += Reqsize;
 
             for (size_t size = 0; size < Reqsize; size++)
@@ -198,11 +198,12 @@ void Server::handleRequest()
             }
         }
     }
-    usleep(500);
+    usleep(10000);
 }
 
 void Server::getMethod(Client &client, std::string urlrcv, Requete req)
 {
+    (void)req;
     std::cout << colors::bright_yellow << "GET Method !" << std::endl;
 
     if(urlrcv.size() >= 64)
@@ -237,7 +238,7 @@ void Server::getMethod(Client &client, std::string urlrcv, Requete req)
 
             if(strcmp(urlrcv.c_str(), "/") == 0)
                 showPage(client, urlsend + servers[client.getNServer()]->getIndex(), 200);
-            else if(servers[client.getNServer()]->getListing() == "on" || loc && loc->getListing() == "on")
+            else if(servers[client.getNServer()]->getListing() == "on" || (loc && loc->getListing() == "on"))
                 rep_listing(client.getClientSocket(), urlrcv, urlsend, client);
             else
                 showError(404, client);
