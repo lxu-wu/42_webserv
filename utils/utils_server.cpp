@@ -276,22 +276,6 @@ bool Server::writewithpoll(std::string url, Client client, std::string str)
         return false;
     }
 
-    // ADD to write queue =================================
-    FD_SET(fd, &writeSet);
-    if(fd > max_fd)
-        max_fd = fd;
-    if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
-        exit(-1);
-    else if (r == 0)
-        std::cout << "Select Timeout" << std::endl;
-    if(FD_ISSET(fd, &writeSet) == 0)
-    {
-        showError(500, client);
-        close(fd);
-        return false;
-    }
-    // =======================
-
     r = write(fd, str.c_str(), str.size());
     if(r < 0)
     {
@@ -313,22 +297,6 @@ bool Server::writewithpoll(std::string url, Client client, Requete req)
         close(fd);
         return false;
     }
-
-    // ADD to write queue =================================
-    FD_SET(fd, &writeSet);
-    if(fd > max_fd)
-        max_fd = fd;
-    if((r = select(max_fd + 1, &readSet, &writeSet, 0, 0)) < 0)
-        exit(-1);
-    else if (r == 0)
-        std::cout << "Select Timeout" << std::endl;
-    if(FD_ISSET(fd, &writeSet) == 0)
-    {
-        showError(500, client);
-        close(fd);
-        return false;
-    }
-    // =======================
 
     std::cout << colors::green << req.getFullBody() << std::endl;
     r = write(fd, req.getFullBody().c_str(), req.getFullBody().size());
