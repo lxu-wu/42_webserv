@@ -73,7 +73,7 @@ You can fing more examples in `conf` directory. `www` is a directory which allow
 
 1. Download/Clone this repo
 
-        git clone https://github.com/llefranc/42_webserv
+        git clone https://github.com/lxu-wu/42_webserv
 
 2. `cd` into the root directory and run `make`
 
